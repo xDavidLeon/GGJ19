@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class CharacterController : MonoBehaviour {
 
     public float moveSpeed = 2;
+    public float moveAcceleration = 10;
     public float turnSpeed = 200;
     private Animator myAnimator;
     public Rigidbody myRigidbody;
@@ -11,15 +12,20 @@ public class CharacterController : MonoBehaviour {
     private float currentV = 0;
     private float currentH = 0;
 
-    private readonly float interpolation = 10;
-    private readonly float walkScale = 0.33f;
-    private readonly float backwardsWalkScale = 0.16f;
-    private readonly float backwardRunScale = 0.66f;
-
     private bool isGrounded;
     private bool wasGrounded;
     private Vector3 currentDirection = Vector3.zero;
     private List<Collider> collisions = new List<Collider>();
+    private Camera cam;
+
+    public Camera CharacterCamera
+    {
+        get
+        {
+            if(cam == null) cam = Camera.main;
+            return cam;
+        }
+    }
 
     private void Awake()
     {
@@ -39,32 +45,28 @@ public class CharacterController : MonoBehaviour {
     {
         float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
+        currentV = Mathf.Lerp(currentV, v, Time.deltaTime * moveAcceleration);
+        currentH = Mathf.Lerp(currentH, h, Time.deltaTime * moveAcceleration);
 
-        Transform camera = Camera.main.transform;
-
-        if(Input.GetKey(KeyCode.LeftShift))
+        Vector3 moveDirection = Vector3.zero;
+        if(CharacterCamera != null)
         {
-            v *= walkScale;
-            h *= walkScale;
+            Transform camera = CharacterCamera.transform;
+            moveDirection = camera.forward * currentV + camera.right * currentH;
         }
 
-        currentV = Mathf.Lerp(currentV, v, Time.deltaTime * interpolation);
-        currentH = Mathf.Lerp(currentH, h, Time.deltaTime * interpolation);
+        float directionLength = moveDirection.magnitude;
+        moveDirection.y = 0;
+        moveDirection = moveDirection.normalized * directionLength;
 
-        Vector3 direction = camera.forward * currentV + camera.right * currentH;
-
-        float directionLength = direction.magnitude;
-        direction.y = 0;
-        direction = direction.normalized * directionLength;
-
-        if(direction != Vector3.zero)
+        if(moveDirection != Vector3.zero)
         {
-            currentDirection = Vector3.Slerp(currentDirection, direction, Time.deltaTime * interpolation);
+            currentDirection = Vector3.Slerp(currentDirection, moveDirection, Time.deltaTime * moveAcceleration);
 
             transform.rotation = Quaternion.LookRotation(currentDirection);
             transform.position += currentDirection * moveSpeed * Time.deltaTime;
 
-            myAnimator.SetFloat("MoveSpeed", direction.magnitude);
+            myAnimator.SetFloat("MoveSpeed", moveDirection.magnitude);
         }
 
         JumpingAndLanding();
