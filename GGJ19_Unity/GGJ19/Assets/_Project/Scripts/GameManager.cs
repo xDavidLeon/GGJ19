@@ -1,15 +1,11 @@
 ﻿using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
     public Board board;
-    public float boardHeight = 0.5f;
+    public TileDatabase tileDatabase;
+    public BlockDatabase blockDatabase;
 
-    public GameObject prefabTileFloor;
-
-    public Material[] matTileFloor;
-
-    public Block selectedBlock;
     public Transform boardContainer;
 
     void Start()
@@ -17,8 +13,6 @@ public class GameManager : MonoBehaviour
         board.InitBoard();
 
         InitBoardAssets();
-
-        PlaceBlock(selectedBlock, 0, 0);
     }
 
     void Update()
@@ -37,14 +31,17 @@ public class GameManager : MonoBehaviour
             }
     }
 
-    public void PlaceBlock(Block block, int startX, int startY)
+    public bool PlacePlayBlock(PlayBlock playBlock)
     {
+        int startX = (int) playBlock.transform.position.x;
+        int startY = (int) playBlock.transform.position.z;
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                if (block.blockBoard[j*4 + i] != 0)
-                    PlaceTile(startX + i, startY + j, Board.ROOM_TYPE.KITCHEN);
+                if (playBlock.block.blockBoard[j*4 + i] != 0)
+                    PlaceTile(startX + i, startY + j, playBlock.roomType);
             }
+        return true;
     }
 
     public void PlaceTile(int x, int y, Board.ROOM_TYPE tileState)
@@ -53,26 +50,26 @@ public class GameManager : MonoBehaviour
         SetTileGameObject(x, y, tileState);
     }
 
-    public void SetTileGameObject(int x, int y, Board.ROOM_TYPE tileState)
+    public void SetTileGameObject(int x, int y, Board.ROOM_TYPE roomType)
     {
         Board.Tile tile = board.tiles[x, y];
 
         if(board.tiles[x, y].gObject != null)
             GameObject.Destroy(board.tiles[x, y].gObject);
 
-        GameObject g = GameObject.Instantiate(prefabTileFloor, new Vector3(x, boardHeight, y), Quaternion.identity);
-        g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
-        g.GetComponent<MeshRenderer>().material = matTileFloor[(int)tile.data.roomType];
-        board.tiles[x, y].gObject = g;
+        GameObject g = CreateTileGameObject(roomType);
 
         g.transform.parent = boardContainer;
+        g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
+
+        board.tiles[x, y].gObject = g;
     }
 
-    public GameObject CreateTileGameObject(Block block, Board.ROOM_TYPE tileState)
+    public GameObject CreateTileGameObject(Board.ROOM_TYPE roomType)
     {
-        GameObject g = GameObject.Instantiate(prefabTileFloor, new Vector3(0, boardHeight, 0), Quaternion.identity);
+        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
         g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
-        g.GetComponent<MeshRenderer>().material = matTileFloor[(int)tileState];
+        g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;
     }
 

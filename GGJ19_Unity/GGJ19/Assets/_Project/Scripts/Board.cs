@@ -73,4 +73,10 @@ public class Board : ScriptableObject
     {
         tiles[x, y].data.connected = connected;
     }
+
+    public static ROOM_TYPE GetRandomRoomType()
+    {
+        int n = System.Enum.GetNames(typeof(ROOM_TYPE)).Length;
+        return (ROOM_TYPE) Random.Range(0, n);
+    }
 }

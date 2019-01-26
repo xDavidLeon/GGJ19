@@ -18,6 +18,7 @@ public class PlayBlock : MonoBehaviour
     [ContextMenu("Populate")]
     public void Populate()
     {
+        Clear();
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {

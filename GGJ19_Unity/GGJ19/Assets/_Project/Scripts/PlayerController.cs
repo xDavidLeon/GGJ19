@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
     public Camera cam = null;
 
     public Block selectedBlock;
@@ -48,5 +47,17 @@ public class PlayerController : MonoBehaviour
             //Move your cube GameObject to the point where you clicked
             playBlock.transform.position = hitPoint;
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (GameManager.Instance.PlacePlayBlock(playBlock))
+            {
+                // Get new block
+                playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), 0);
+                playBlock.Populate();
+            }
+            
+        }
     }
+
 }
