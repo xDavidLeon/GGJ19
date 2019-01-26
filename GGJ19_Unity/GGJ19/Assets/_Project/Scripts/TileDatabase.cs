@@ -12,6 +12,7 @@ public class TileDatabase : ScriptableObject
     [Header("Prefabs")]
     public GameObject prefabTileFloor;
     public GameObject prefabWall;
+    public GameObject prefabDoor;
 
     [Header("Settings")]
     public float tileScale = 1.0f;

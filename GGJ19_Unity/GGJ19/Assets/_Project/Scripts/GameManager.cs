@@ -146,7 +146,7 @@ public class GameManager : Singleton<GameManager>
     /// <param name="playBlock">Play block.</param>
     public bool PlacePlayBlock(PlayBlock playBlock)
     {
-        if (CheckPlacePlayBlock(playBlock) == false)
+        if(CheckPlacePlayBlock(playBlock) == false)
             return false;
 
         int block_id = last_block_id++;
@@ -155,7 +155,7 @@ public class GameManager : Singleton<GameManager>
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                if (playBlock.block.GetValue(i, j) != 0)
+                if(playBlock.block.GetValue(i, j) != 0)
                     PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
             }
         return true;
@@ -167,18 +167,18 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="tileState"></param>
-    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id, int block_id )
+    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id, int block_id)
     {
         Board.Tile t = board.GetTile(x, y);
         t.data.roomType = roomState;
         t.data.player = player_id;
         t.block_id = block_id;
-        PlaceTileGameObject( x, y, roomState );
+        PlaceTileGameObject(x, y, roomState);
     }
 
     public void NextTurn()
     {
-        CurrentPlayer.score = board.ComputePlayerScore( CurrentPlayer.playerId );
+        CurrentPlayer.score = board.ComputePlayerScore(CurrentPlayer.playerId);
 
         // Get new block
         CurrentPlayer.RandomBlock();
@@ -204,18 +204,17 @@ public class GameManager : Singleton<GameManager>
                 Board.Tile tile = board.tiles[i, j];
                 tile.ClearVisuals();
                 PlaceTileGameObject(i, j, tile.data.roomType);
-
-                if (i > 0 && board.GetTileState(i-1, j) != tile.data.roomType)
-                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Left);
-                if(i < boardWidth - 1 && board.GetTileState(i + 1, j) != tile.data.roomType)
-                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Right);
-                if(j > 0 && board.GetTileState(i, j - 1) != tile.data.roomType)
-                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Bot);
-                if(j < boardHeight - 1 && board.GetTileState(i, j+1) != tile.data.roomType)
-                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Top);
+                PlaceWalls(tile);
             }
     }
 
+    private void PlaceWalls(Board.Tile tile)
+    {
+        PlaceWall(tile, Constants.Direction.Left);
+        PlaceWall(tile, Constants.Direction.Right);
+        PlaceWall(tile, Constants.Direction.Top);
+        PlaceWall(tile, Constants.Direction.Bot);
+    }
 
     /// <summary>
     /// Sets the visual representation of the Tile according to the roomType
@@ -242,49 +241,80 @@ public class GameManager : Singleton<GameManager>
         return g;
     }
 
-    public GameObject PlaceWallGameObject(int x, int y, Board.ROOM_TYPE roomType, Constants.Direction direction)
+    public GameObject PlaceWall(Board.Tile tile, Constants.Direction direction)
     {
-        Board.Tile tile = board.tiles[x, y];
+        if(tile.data.roomType == Board.ROOM_TYPE.EMPTY) return null;
+        if(tile.data.roomType == Board.ROOM_TYPE.WALL) return null;
 
-        GameObject target = null;
-        if(direction == Constants.Direction.Bot) target = board.tiles[x, y].gWallBot;
-        else if(direction == Constants.Direction.Top) target = board.tiles[x, y].gWallTop;
-        else if(direction == Constants.Direction.Left) target = board.tiles[x, y].gWallLeft;
-        else if(direction == Constants.Direction.Right) target = board.tiles[x, y].gWallRight;
+        // Out of bounds checks
+        if(direction == Constants.Direction.Left && tile.pos_x <= 0) return null;
+        else if(direction == Constants.Direction.Right && tile.pos_x >= boardWidth - 1) return null;
+        else if(direction == Constants.Direction.Bot && tile.pos_y <= 0.0f) return null;
+        else if(direction == Constants.Direction.Top && tile.pos_y >= boardHeight - 1) return null;
 
-        if(target != null)
-            GameObject.Destroy(target);
+        // Where will we store the gameObject?
+        GameObject targetGO = null;
+        Board.Tile targetTile = tile;
+        int x = tile.pos_x;
+        int y = tile.pos_y;
 
-        GameObject g = CreateWallGameObject(roomType);
+        if(direction == Constants.Direction.Bot)
+        {
+            targetTile = board.GetTile(x, y - 1);
+            targetGO = tile.gWallBot;
+        }
+        else if(direction == Constants.Direction.Top)
+        {
+            targetTile = board.GetTile(x, y + 1);
+            targetGO = tile.gWallTop;
+        }
+        else if(direction == Constants.Direction.Left)
+        {
+            targetTile = board.GetTile(x - 1, y);
+            targetGO = tile.gWallLeft;
+        }
+        else if(direction == Constants.Direction.Right)
+        {
+            targetTile = board.GetTile(x + 1, y);
+            targetGO = tile.gWallRight;
+        }
 
-        g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
+        if(targetGO != null)
+            GameObject.Destroy(targetGO);
+
+        GameObject gPrefab = tileDatabase.prefabWall;
+        if(targetTile.data.roomType == Board.ROOM_TYPE.WALL || targetTile.data.roomType == Board.ROOM_TYPE.EMPTY) gPrefab = tileDatabase.prefabWall;
+        else if(targetTile.data.roomType != tile.data.roomType) gPrefab = tileDatabase.prefabDoor;
+        else return null;
+
+        GameObject g = CreateWallGameObject(tile.data.roomType, gPrefab);
         g.transform.parent = boardContainer;
 
         if(direction == Constants.Direction.Bot)
         {
-            g.name = "Tile_X" + x + "Y" + y + "WallBot";
+            g.name = "Tile_X" + x + "Y" + y + "WallBot-" + gPrefab.name;
             g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
-            board.tiles[x, y].gWallBot = g;
+            tile.gWallBot = g;
         }
         else if(direction == Constants.Direction.Top)
         {
-            g.name = "Tile_X" + x + "Y" + y + "WallTop";
+            g.name = "Tile_X" + x + "Y" + y + "WallTop-" + gPrefab.name;
             g.transform.localPosition = new Vector3(x, Constants.boardHeight, y + 1.0f);
-            board.tiles[x, y].gWallTop = g;
+            tile.gWallTop = g;
         }
         else if(direction == Constants.Direction.Left)
         {
-            g.name = "Tile_X" + x + "Y" + y + "WallLeft";
+            g.name = "Tile_X" + x + "Y" + y + "WallLeft-" + gPrefab.name;
             g.transform.localRotation = Quaternion.Euler(0, -90, 0);
             g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
-            board.tiles[x, y].gWallLeft = g;
+            tile.gWallLeft = g;
         }
         else if(direction == Constants.Direction.Right)
         {
-            g.name = "Tile_X" + x + "Y" + y + "WallRight";
+            g.name = "Tile_X" + x + "Y" + y + "WallRight-" + gPrefab.name;
             g.transform.localRotation = Quaternion.Euler(0, -90, 0);
             g.transform.localPosition = new Vector3(x + 1.0f, Constants.boardHeight, y);
-            board.tiles[x, y].gWallRight = g;
+            tile.gWallRight = g;
         }
 
         return g;
@@ -303,9 +333,9 @@ public class GameManager : Singleton<GameManager>
         return g;
     }
 
-    public GameObject CreateWallGameObject(Board.ROOM_TYPE roomType)
+    public GameObject CreateWallGameObject(Board.ROOM_TYPE roomType, GameObject gPrefab)
     {
-        GameObject g = GameObject.Instantiate(tileDatabase.prefabWall, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
+        GameObject g = GameObject.Instantiate(gPrefab, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
         //g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
         g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;
