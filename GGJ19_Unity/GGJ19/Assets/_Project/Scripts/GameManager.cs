@@ -13,12 +13,19 @@ public class GameManager : Singleton<GameManager>
 
     public int numPlayers = 2;
     public int currentPlayer = 0;
-
+    Vector2[] offsets;
 
     void Start()
     {
-        board.InitBoard(boardWidth, boardHeight);
+        offsets = new Vector2[4];
+        offsets[0].Set(-1, 0);
+        offsets[1].Set(+1, 0);
+        offsets[2].Set(0, -1);
+        offsets[3].Set(0, +1);
 
+        board.InitBoard( boardWidth, boardHeight );
+        for(int i = 0; i < numPlayers; ++i)
+            SetPlayerStart(i);
         UpdateBoardTileAssets();
     }
 
@@ -27,16 +34,39 @@ public class GameManager : Singleton<GameManager>
 
     }
 
+    void SetPlayerStart( int player_id )
+    {
+        int start_x = 0;
+        int start_y = 0;
+
+        if (player_id == 0 || player_id == 1)
+            start_y = (int)(boardHeight * 0.5);
+        if (player_id == 2 || player_id == 3)
+            start_x = (int)(boardWidth * 0.5);
+        if (player_id == 1)
+            start_x = boardWidth - 1;
+        if (player_id == 3)
+            start_y = boardHeight - 1;
+
+        Board.Tile tile = board.GetTile( start_x, start_y );
+        tile.data.player = player_id;
+        tile.data.roomType = Board.ROOM_TYPE.START;
+    }
+
     /// <summary>
+    /// Check if a PlayBlock could be placed in the board
     /// Called by the PlayerController to place all the tiles from a new block.
     /// </summary>
     /// <param name="playBlock"></param>
     /// <returns></returns>
-    public bool PlacePlayBlock(PlayBlock playBlock)
+    public bool CheckPlacePlayBlock(PlayBlock playBlock)
     {
         int startX = (int) playBlock.transform.position.x;
         int startY = (int) playBlock.transform.position.z;
 
+        bool touching_player = false;
+
+        //check if placeable
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
@@ -44,17 +74,51 @@ public class GameManager : Singleton<GameManager>
                 int y = startY + j;
                 if (x < 0 || x >= board.boardWidth || y < 0 || y >= board.boardHeight)
                     return false;
-                if (playBlock.block.GetValue(i,j) != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
+                int has_cell = playBlock.block.GetValue(i, j);
+                if (has_cell != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
                     return false;
+                //check if player id near
+                if(!touching_player && has_cell == 1)
+                    for(int k = 0; k < 4; ++k)
+                    {
+                        Vector2 offset = offsets[k];
+                        int x2 = x + (int)offset.x;
+                        int y2 = y + (int)offset.y;
+                        if (x2 < 0 || x2 >= board.boardWidth || y2 < 0 || y2 >= boardHeight)
+                            continue; //could happen
+                        Board.Tile tile = board.GetTile( x2,y2 );
+                        if (tile.data.player == currentPlayer)
+                        {
+                            touching_player = true;
+                            break;
+                        }
+                    }
+
             }
 
+        if (!touching_player) //add tip in GUI about not close to player
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Places a block if it fits
+    /// </summary>
+    /// <returns><c>true</c>, if play block was placed, <c>false</c> otherwise.</returns>
+    /// <param name="playBlock">Play block.</param>
+    public bool PlacePlayBlock(PlayBlock playBlock)
+    {
+        if (CheckPlacePlayBlock(playBlock) == false)
+            return false;
+        int startX = (int)playBlock.transform.position.x;
+        int startY = (int)playBlock.transform.position.z;
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
             {
-                if (playBlock.block.GetValue(i,j) != 0)
-                    PlaceTile( startX + i, startY + j, playBlock.roomType );
+                if (playBlock.block.GetValue(i, j) != 0)
+                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayer);
             }
-
         return true;
     }
 
@@ -64,10 +128,12 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="tileState"></param>
-    public void PlaceTile(int x, int y, Board.ROOM_TYPE tileState)
+    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id )
     {
-        board.SetTileState(x, y, tileState);
-        PlaceTileGameObject(x, y, tileState);
+        Board.Tile t = board.GetTile(x, y);
+        t.data.roomType = roomState;
+        t.data.player = player_id;
+        PlaceTileGameObject(x, y, roomState);
     }
 
     public void NextPlayer()
@@ -104,7 +170,7 @@ public class GameManager : Singleton<GameManager>
         Board.Tile tile = board.tiles[x, y];
 
         if(board.tiles[x, y].gObject != null)
-            GameObject.Destroy(board.tiles[x, y].gObject);
+            GameObject.Destroy( board.tiles[x, y].gObject );
 
         GameObject g = CreateTileGameObject(roomType);
 

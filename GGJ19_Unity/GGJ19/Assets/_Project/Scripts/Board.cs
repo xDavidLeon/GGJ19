@@ -19,11 +19,20 @@ public class Board : ScriptableObject
     }
 
     [System.Serializable]
-    public struct TileData
+    public class TileData
     {
         public ROOM_TYPE roomType;
         public int player;
         public bool connected;
+        public int sector; //to which room sector belongs
+
+        public TileData()
+        {
+            player = -1;
+            sector = -1;
+            connected = false;
+            roomType = ROOM_TYPE.EMPTY;    
+        }
     }
 
     [System.Serializable]
@@ -33,6 +42,16 @@ public class Board : ScriptableObject
         public GameObject gObject; //floor
         public GameObject gTopWallObject = null; //topwall
         public GameObject gLeftWallObject = null; //leftwall
+
+        public void Clear()
+        {
+            data.connected = false;
+            data.player = -1;
+            data.roomType = ROOM_TYPE.EMPTY;
+            //GameObject.Destroy( this.gObject );
+            //GameObject.Destroy( this.gTopWallObject );
+            //GameObject.Destroy( this.gLeftWallObject );
+        }
     }
 
     public Tile[,] tiles;
@@ -63,6 +82,18 @@ public class Board : ScriptableObject
             }
 
         initialized = true;
+    }
+
+    public Tile GetTile(int x, int y)
+    {
+        return tiles[x, y];
+    }
+
+    public void SetTile(int x, int y, Tile t)
+    {
+        tiles[x, y].Clear();
+        tiles[x, y].data = t.data;
+        //populate?
     }
 
     public ROOM_TYPE GetTileState(int x, int y)
