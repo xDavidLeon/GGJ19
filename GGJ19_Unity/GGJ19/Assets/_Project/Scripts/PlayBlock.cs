@@ -10,6 +10,11 @@ public class PlayBlock : MonoBehaviour
     public Board.ROOM_TYPE roomType;
     public int player = 0;
 
+    void Awake()
+    {
+        block = ScriptableObject.CreateInstance<Block>();
+    }
+
     public void SetData(Block b, Board.ROOM_TYPE s, int p)
     {
         blockBlueprint = b;
@@ -20,7 +25,7 @@ public class PlayBlock : MonoBehaviour
     }
 
     [ContextMenu("Populate")]
-    public void Populate(int dir = 0)
+    public void Populate()
     {
         Clear();
         for(int i = 0; i < 4; i++)
