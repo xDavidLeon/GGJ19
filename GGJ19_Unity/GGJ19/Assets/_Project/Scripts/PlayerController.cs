@@ -92,8 +92,11 @@ public class PlayerController : MonoBehaviour
                 // TODO if it was a valid placement, check if game is over. If not, give control to next player
                 GameManager.Instance.NextPlayer();
             }
-            
         }
-    }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            playBlock.Rotate(1);
+        }
 
+    }
 }

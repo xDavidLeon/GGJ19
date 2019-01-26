@@ -14,7 +14,8 @@ public class Board : ScriptableObject
         KITCHEN,
         CORRIDOR,
         DORM,
-        BATH
+        BATH,
+        LIVING
     }
 
     [System.Serializable]
@@ -62,6 +63,11 @@ public class Board : ScriptableObject
         initialized = true;
     }
 
+    public ROOM_TYPE GetTileState(int x, int y)
+    {
+        return tiles[x, y].data.roomType;
+    }
+
     public void SetTileState(int x, int y, ROOM_TYPE state)
     {
         tiles[x, y].data.roomType = state;
@@ -80,6 +86,6 @@ public class Board : ScriptableObject
     public static ROOM_TYPE GetRandomRoomType()
     {
         int n = System.Enum.GetNames(typeof(ROOM_TYPE)).Length;
-        return (ROOM_TYPE) Random.Range(0, n);
+        return (ROOM_TYPE) Random.Range(0, n - 3) + 3;
     }
 }
