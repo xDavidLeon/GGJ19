@@ -45,6 +45,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileDatabase: {fileID: 11400000, guid: 227fb4e04c7a882408d21c8a6f444eb4, type: 2}
   blockBlueprint: {fileID: 0}
-  block: {fileID: 11400000, guid: cac6b0e2b3474c94e89af811970d6368, type: 2}
+  block: {fileID: 0}
   roomType: 0
   player: 0

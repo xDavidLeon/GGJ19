@@ -16,6 +16,8 @@ MonoBehaviour:
     type: 3}
   prefabWall: {fileID: 3930643431530456623, guid: d156c9133198ff249a3f54392dc28a2b,
     type: 3}
+  prefabDoor: {fileID: 1801878651197709924, guid: 45b095e42114c004487639cd92652693,
+    type: 3}
   tileScale: 1
   tileMaterials:
     reorderableList:
