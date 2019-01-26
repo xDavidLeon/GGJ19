@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabTileFloor: {fileID: 201222943900977158, guid: 0e1274a8745a40645a4a3298c9cd9b74,
     type: 3}
+  prefabWall: {fileID: 3930643431530456623, guid: d156c9133198ff249a3f54392dc28a2b,
+    type: 3}
+  tileScale: 1
   tileMaterials:
     reorderableList:
       canAdd: 1

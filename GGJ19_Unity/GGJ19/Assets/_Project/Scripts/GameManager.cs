@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -15,11 +14,19 @@ public class GameManager : Singleton<GameManager>
     public List<PlayerController> players;
 
     public int numPlayers = 2;
-    public int currentPlayer = 0;
+    public int currentPlayerId = 0;
     Vector2[] offsets;
 
     public int turn = 0;
     public int last_block_id = 0;
+
+    public PlayerController CurrentPlayer
+    {
+        get
+        {
+            return players[currentPlayerId];
+        }
+    }
 
     void Start()
     {
@@ -31,7 +38,7 @@ public class GameManager : Singleton<GameManager>
 
         last_block_id = 0;
 
-        board.InitBoard( boardWidth, boardHeight );
+        board.InitBoard(boardWidth, boardHeight);
         for(int i = 0; i < numPlayers; ++i)
             SetPlayerStartTiles(i);
         UpdateBoardTileAssets();
@@ -42,21 +49,21 @@ public class GameManager : Singleton<GameManager>
 
     }
 
-    void SetPlayerStartTiles( int player_id )
+    void SetPlayerStartTiles(int player_id)
     {
         int start_x = 0;
         int start_y = 0;
 
-        if (player_id == 0 || player_id == 1)
+        if(player_id == 0 || player_id == 1)
             start_y = (int)(boardHeight * 0.5);
-        if (player_id == 2 || player_id == 3)
+        if(player_id == 2 || player_id == 3)
             start_x = (int)(boardWidth * 0.5);
-        if (player_id == 1)
+        if(player_id == 1)
             start_x = boardWidth - 1;
-        if (player_id == 3)
+        if(player_id == 3)
             start_y = boardHeight - 1;
 
-        Board.Tile tile = board.GetTile( start_x, start_y );
+        Board.Tile tile = board.GetTile(start_x, start_y);
         tile.data.player = player_id;
         tile.data.roomType = Board.ROOM_TYPE.START;
     }
@@ -69,8 +76,8 @@ public class GameManager : Singleton<GameManager>
     /// <returns></returns>
     public bool CheckPlacePlayBlock(PlayBlock playBlock)
     {
-        int startX = (int) playBlock.transform.position.x;
-        int startY = (int) playBlock.transform.position.z;
+        int startX = (int)playBlock.transform.position.x;
+        int startY = (int)playBlock.transform.position.z;
 
         bool touching_player = false;
 
@@ -80,10 +87,10 @@ public class GameManager : Singleton<GameManager>
             {
                 int x = startX + i;
                 int y = startY + j;
-                if (x < 0 || x >= board.boardWidth || y < 0 || y >= board.boardHeight)
+                if(x < 0 || x >= board.boardWidth || y < 0 || y >= board.boardHeight)
                     return false;
                 int has_cell = playBlock.block.GetValue(i, j);
-                if (has_cell != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
+                if(has_cell != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
                 {
                     Debug.Log("not empty");
                     return false;
@@ -95,10 +102,10 @@ public class GameManager : Singleton<GameManager>
                         Vector2 offset = offsets[k];
                         int x2 = x + (int)offset.x;
                         int y2 = y + (int)offset.y;
-                        if (x2 < 0 || x2 >= board.boardWidth || y2 < 0 || y2 >= boardHeight)
+                        if(x2 < 0 || x2 >= board.boardWidth || y2 < 0 || y2 >= boardHeight)
                             continue; //could happen
-                        Board.Tile tile = board.GetTile( x2,y2 );
-                        if (tile.data.player == currentPlayer)
+                        Board.Tile tile = board.GetTile(x2, y2);
+                        if(tile.data.player == currentPlayerId)
                         {
                             touching_player = true;
                             break;
@@ -107,7 +114,7 @@ public class GameManager : Singleton<GameManager>
 
             }
 
-        if (!touching_player) //add tip in GUI about not close to player
+        if(!touching_player) //add tip in GUI about not close to player
         {
             Debug.Log("far from player");
             return false;
@@ -129,11 +136,11 @@ public class GameManager : Singleton<GameManager>
         int block_id = last_block_id++;
         int startX = (int)playBlock.transform.position.x;
         int startY = (int)playBlock.transform.position.z;
-        for (int i = 0; i < 4; i++)
-            for (int j = 0; j < 4; j++)
+        for(int i = 0; i < 4; i++)
+            for(int j = 0; j < 4; j++)
             {
                 if (playBlock.block.GetValue(i, j) != 0)
-                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayer, block_id);
+                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
             }
         return true;
     }
@@ -153,17 +160,18 @@ public class GameManager : Singleton<GameManager>
         PlaceTileGameObject( x, y, roomState );
     }
 
-    public void onEndPlayerTurn()
+    public void NextTurn()
     {
-        // TODO if it was a valid placement, check if game is over. If not, give control to next player
-        PlayerData p = players[currentPlayer];
-        currentPlayer = (currentPlayer + 1) % numPlayers;
 
+        CurrentPlayer.score = board.ComputePlayerScore( CurrentPlayer.playerId );
 
-        if (currentPlayer == 0)
-        {
-            turn++;
-        }
+        // Get new block
+        CurrentPlayer.RandomBlock();
+
+        UpdateBoardTileAssets();
+
+        currentPlayerId = (currentPlayerId + 1) % numPlayers;
+        if(currentPlayerId == 0) turn++;
     }
 
     #region VISUALS
@@ -179,6 +187,15 @@ public class GameManager : Singleton<GameManager>
             {
                 Board.Tile tile = board.tiles[i, j];
                 PlaceTileGameObject(i, j, tile.data.roomType);
+
+                if (i > 0 && board.GetTileState(i-1, j) != tile.data.roomType)
+                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Left);
+                else if(i < boardWidth - 1 && board.GetTileState(i + 1, j) != tile.data.roomType)
+                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Right);
+                else if(j > 0 && board.GetTileState(i, j - 1) != tile.data.roomType)
+                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Bot);
+                else if(j < boardHeight - 1 && board.GetTileState(i, j+1) != tile.data.roomType)
+                    PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Top);
             }
     }
 
@@ -190,20 +207,66 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="roomType"></param>
-    public void PlaceTileGameObject(int x, int y, Board.ROOM_TYPE roomType)
+    public GameObject PlaceTileGameObject(int x, int y, Board.ROOM_TYPE roomType)
     {
         Board.Tile tile = board.tiles[x, y];
 
-        if(board.tiles[x, y].gObject != null)
-            GameObject.Destroy( board.tiles[x, y].gObject );
+        if(board.tiles[x, y].gFloor != null)
+            GameObject.Destroy(board.tiles[x, y].gFloor);
 
         GameObject g = CreateTileGameObject(roomType);
 
-        g.SetActive( roomType != Board.ROOM_TYPE.EMPTY );
+        g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
         g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
 
-        board.tiles[x, y].gObject = g;
+        board.tiles[x, y].gFloor = g;
+
+        return g;
+    }
+
+    public GameObject PlaceWallGameObject(int x, int y, Board.ROOM_TYPE roomType, Constants.Direction direction)
+    {
+        Board.Tile tile = board.tiles[x, y];
+
+        GameObject target = null;
+        if(direction == Constants.Direction.Bot) target = board.tiles[x, y].gWallBot;
+        else if(direction == Constants.Direction.Top) target = board.tiles[x, y].gWallTop;
+        else if(direction == Constants.Direction.Left) target = board.tiles[x, y].gWallLeft;
+        else if(direction == Constants.Direction.Right) target = board.tiles[x, y].gWallRight;
+
+        if(target != null)
+            GameObject.Destroy(target);
+
+        GameObject g = CreateWallGameObject(roomType);
+
+        g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
+        g.transform.parent = boardContainer;
+
+        if(direction == Constants.Direction.Bot)
+        {
+            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y - 0.5f);
+            board.tiles[x, y].gWallBot = target;
+        }
+        else if(direction == Constants.Direction.Top)
+        {
+            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y + 0.5f);
+            board.tiles[x, y].gWallTop = target;
+        }
+        else if(direction == Constants.Direction.Left)
+        {
+            g.transform.localRotation = Quaternion.Euler(0, 90, 0);
+            g.transform.localPosition = new Vector3(x - 0.5f, Constants.boardHeight, y);
+            board.tiles[x, y].gWallLeft = target;
+        }
+        else if(direction == Constants.Direction.Right)
+        {
+            g.transform.localRotation = Quaternion.Euler(0, -90, 0);
+            g.transform.localPosition = new Vector3(x + 0.5f, Constants.boardHeight, y);
+            board.tiles[x, y].gWallRight = target;
+        }
+
+        return g;
     }
 
     /// <summary>
@@ -215,12 +278,12 @@ public class GameManager : Singleton<GameManager>
     /// <param name="h">The height.</param>
     public void updateWallsGameObjects()
     {
-        for (int i = 1; i < board.boardWidth - 1; ++i)
-            for (int j = 1; j < board.boardHeight - 1; ++j)
+        for(int i = 1; i < board.boardWidth - 1; ++i)
+            for(int j = 1; j < board.boardHeight - 1; ++j)
             {
                 Board.Tile top_tile = board.tiles[i - 1, j];
                 Board.Tile left_tile = board.tiles[i, j - 1];
-                Board.Tile tile = board.tiles[ i, j ];
+                Board.Tile tile = board.tiles[i, j];
 
                 /*
                 if (board.tiles[x, y].gObject != null)
@@ -233,10 +296,9 @@ public class GameManager : Singleton<GameManager>
                 g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
 
                 board.tiles[x, y].gObject = g;
-                */               
+                */
             }
     }
-
 
     /// <summary>
     /// Create the GameObject Visual representation to be used by other methods (board or playblocks)
@@ -245,8 +307,16 @@ public class GameManager : Singleton<GameManager>
     /// <returns></returns>
     public GameObject CreateTileGameObject(Board.ROOM_TYPE roomType)
     {
-        GameObject g = GameObject.Instantiate( tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
-        g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
+        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
+        g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
+        g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
+        return g;
+    }
+
+    public GameObject CreateWallGameObject(Board.ROOM_TYPE roomType)
+    {
+        GameObject g = GameObject.Instantiate(tileDatabase.prefabWall, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
+        g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
         g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;
     }
