@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class CharacterController : MonoBehaviour {
 
+    [Header("Movement")]
     public float moveSpeed = 2;
     public float moveAcceleration = 10;
     public float turnSpeed = 200;
@@ -16,6 +17,12 @@ public class CharacterController : MonoBehaviour {
     private bool wasGrounded;
     private Vector3 currentDirection = Vector3.zero;
     private List<Collider> collisions = new List<Collider>();
+
+    [Header("Grab System")]
+    public GameObject targetProp;
+    public GameObject grabbedProp;
+    public Transform grabHands;
+
     private Camera cam;
 
     public Camera CharacterCamera
@@ -24,6 +31,14 @@ public class CharacterController : MonoBehaviour {
         {
             if(cam == null) cam = Camera.main;
             return cam;
+        }
+    }
+
+    public bool IsAnyPropGrabbed
+    {
+        get
+        {
+            return grabbedProp != null;
         }
     }
 
@@ -37,11 +52,29 @@ public class CharacterController : MonoBehaviour {
     {
         myAnimator.SetBool("Grounded", isGrounded);
 
-        UpdateInput();
+        UpdateInputMovement();
+
+        if (grabbedProp != null)
+        {
+            grabbedProp.GetComponent<Rigidbody>().MovePosition(grabHands.position);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (IsAnyPropGrabbed)
+            {
+                DropProp();
+            }
+            else
+            {
+                GrabProp(targetProp);
+            }
+        }
+
         wasGrounded = isGrounded;
     }
 
-    private void UpdateInput()
+    private void UpdateInputMovement()
     {
         float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
@@ -138,4 +171,41 @@ public class CharacterController : MonoBehaviour {
         if (collisions.Count == 0) { isGrounded = false; }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("Prop") == false) return;
+        if(grabbedProp != null) return; // Already holding prop
+        targetProp = other.gameObject;
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if(other.CompareTag("Prop") == false) return;
+        if(grabbedProp != null) return; // Already holding prop
+        targetProp = other.gameObject;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if(other.CompareTag("Prop") == false) return;
+        if(targetProp == other.gameObject)
+            targetProp = null;
+    }
+
+    public void GrabProp(GameObject prop)
+    {
+        if(grabbedProp != null) return; // Prop already grabbed
+
+        grabbedProp = prop;
+        Rigidbody r = grabbedProp.GetComponent<Rigidbody>();
+        r.useGravity = false;
+    }
+
+    public void DropProp()
+    {
+        if(grabbedProp == null) return; // No prop grabbed
+        Rigidbody r = grabbedProp.GetComponent<Rigidbody>();
+        r.useGravity = true;
+        grabbedProp = null;
+    }
 }
