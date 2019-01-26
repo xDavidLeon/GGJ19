@@ -40,10 +40,10 @@ public class Board : ScriptableObject
     {
         public TileData data;
         public GameObject gFloor; //floor
-        public GameObject gWallLeft = null; //topwall
-        public GameObject gWallRight = null; //topwall
-        public GameObject gWallTop = null; //topwall
-        public GameObject gWallBot = null; //topwall
+        public GameObject gWallLeft = null; 
+        public GameObject gWallRight = null;
+        public GameObject gWallTop = null; 
+        public GameObject gWallBot = null; 
 
         public void Clear()
         {
@@ -53,6 +53,15 @@ public class Board : ScriptableObject
             //GameObject.Destroy( this.gObject );
             //GameObject.Destroy( this.gTopWallObject );
             //GameObject.Destroy( this.gLeftWallObject );
+        }
+
+        public void ClearVisuals()
+        {
+            GameObject.Destroy(gFloor);
+            GameObject.Destroy(gWallLeft);
+            GameObject.Destroy(gWallRight);
+            GameObject.Destroy(gWallTop);
+            GameObject.Destroy(gWallBot);
         }
     }
 

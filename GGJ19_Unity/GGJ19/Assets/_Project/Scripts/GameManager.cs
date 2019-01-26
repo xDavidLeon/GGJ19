@@ -173,19 +173,21 @@ public class GameManager : Singleton<GameManager>
     public void UpdateBoardTileAssets()
     {
         if(board == null || board.initialized == false) return;
+
         for(int i = 0; i < boardWidth; i++)
             for(int j = 0; j < boardHeight; j++)
             {
                 Board.Tile tile = board.tiles[i, j];
+                tile.ClearVisuals();
                 PlaceTileGameObject(i, j, tile.data.roomType);
 
                 if (i > 0 && board.GetTileState(i-1, j) != tile.data.roomType)
                     PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Left);
-                else if(i < boardWidth - 1 && board.GetTileState(i + 1, j) != tile.data.roomType)
+                if(i < boardWidth - 1 && board.GetTileState(i + 1, j) != tile.data.roomType)
                     PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Right);
-                else if(j > 0 && board.GetTileState(i, j - 1) != tile.data.roomType)
+                if(j > 0 && board.GetTileState(i, j - 1) != tile.data.roomType)
                     PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Bot);
-                else if(j < boardHeight - 1 && board.GetTileState(i, j+1) != tile.data.roomType)
+                if(j < boardHeight - 1 && board.GetTileState(i, j+1) != tile.data.roomType)
                     PlaceWallGameObject(i, j, tile.data.roomType, Constants.Direction.Top);
             }
     }
@@ -206,7 +208,7 @@ public class GameManager : Singleton<GameManager>
             GameObject.Destroy(board.tiles[x, y].gFloor);
 
         GameObject g = CreateTileGameObject(roomType);
-
+        g.name = "Tile_X" + x + "Y" + y;
         g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
         g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
@@ -236,25 +238,29 @@ public class GameManager : Singleton<GameManager>
 
         if(direction == Constants.Direction.Bot)
         {
-            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y - 0.5f);
-            board.tiles[x, y].gWallBot = target;
+            g.name = "Tile_X" + x + "Y" + y + "WallBot";
+            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
+            board.tiles[x, y].gWallBot = g;
         }
         else if(direction == Constants.Direction.Top)
         {
-            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y + 0.5f);
-            board.tiles[x, y].gWallTop = target;
+            g.name = "Tile_X" + x + "Y" + y + "WallTop";
+            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y + 1.0f);
+            board.tiles[x, y].gWallTop = g;
         }
         else if(direction == Constants.Direction.Left)
         {
-            g.transform.localRotation = Quaternion.Euler(0, 90, 0);
-            g.transform.localPosition = new Vector3(x - 0.5f, Constants.boardHeight, y);
-            board.tiles[x, y].gWallLeft = target;
+            g.name = "Tile_X" + x + "Y" + y + "WallLeft";
+            g.transform.localRotation = Quaternion.Euler(0, -90, 0);
+            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
+            board.tiles[x, y].gWallLeft = g;
         }
         else if(direction == Constants.Direction.Right)
         {
+            g.name = "Tile_X" + x + "Y" + y + "WallRight";
             g.transform.localRotation = Quaternion.Euler(0, -90, 0);
-            g.transform.localPosition = new Vector3(x + 0.5f, Constants.boardHeight, y);
-            board.tiles[x, y].gWallRight = target;
+            g.transform.localPosition = new Vector3(x + 1.0f, Constants.boardHeight, y);
+            board.tiles[x, y].gWallRight = g;
         }
 
         return g;
@@ -307,7 +313,7 @@ public class GameManager : Singleton<GameManager>
     public GameObject CreateWallGameObject(Board.ROOM_TYPE roomType)
     {
         GameObject g = GameObject.Instantiate(tileDatabase.prefabWall, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
-        g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
+        //g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
         g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;
     }
