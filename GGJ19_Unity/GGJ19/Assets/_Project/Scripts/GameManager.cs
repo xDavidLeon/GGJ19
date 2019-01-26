@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -12,6 +13,7 @@ public class GameManager : Singleton<GameManager>
 
     public int numPlayers = 2;
     public int currentPlayer = 0;
+
 
     void Start()
     {
@@ -40,17 +42,17 @@ public class GameManager : Singleton<GameManager>
             {
                 int x = startX + i;
                 int y = startY + j;
-                if (x < 0 || x >= board.width || y < 0 || y >= board.height)
+                if (x < 0 || x >= board.boardWidth || y < 0 || y >= board.boardHeight)
                     return false;
-                if (board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
+                if (playBlock.block.GetValue(i,j) != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
                     return false;
             }
 
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
             {
-                if (playBlock.block.blockBoard[j * 4 + i] != 0)
-                    PlaceTile(startX + i, startY + j, playBlock.roomType);
+                if (playBlock.block.GetValue(i,j) != 0)
+                    PlaceTile( startX + i, startY + j, playBlock.roomType );
             }
 
         return true;
@@ -107,6 +109,38 @@ public class GameManager : Singleton<GameManager>
 
         board.tiles[x, y].gObject = g;
     }
+
+    /// <summary>
+    /// Given a board region, repopulates prefabs for the walls
+    /// </summary>
+    /// <param name="x">The x coordinate.</param>
+    /// <param name="y">The y coordinate.</param>
+    /// <param name="w">The width.</param>
+    /// <param name="h">The height.</param>
+    public void updateWallsGameObjects()
+    {
+        for (int i = 1; i < board.boardWidth - 1; ++i)
+            for (int j = 1; j < board.boardHeight - 1; ++j)
+            {
+                Board.Tile top_tile = board.tiles[i - 1, j];
+                Board.Tile left_tile = board.tiles[i, j - 1];
+                Board.Tile tile = board.tiles[ i, j ];
+
+                /*
+                if (board.tiles[x, y].gObject != null)
+                    GameObject.Destroy(board.tiles[x, y].gObject);
+
+                GameObject g = CreateTileGameObject(roomType);
+
+                g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
+                g.transform.parent = boardContainer;
+                g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
+
+                board.tiles[x, y].gObject = g;
+                */               
+            }
+    }
+
 
     /// <summary>
     /// Create the GameObject Visual representation to be used by other methods (board or playblocks)

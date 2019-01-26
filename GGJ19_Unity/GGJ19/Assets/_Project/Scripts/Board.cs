@@ -30,15 +30,17 @@ public class Board : ScriptableObject
     public class Tile
     {
         public TileData data;
-        public GameObject gObject;
+        public GameObject gObject; //floor
+        public GameObject gTopWallObject = null; //topwall
+        public GameObject gLeftWallObject = null; //leftwall
     }
 
     public Tile[,] tiles;
 
     public bool initialized = false;
 
-    private int boardWidth = 20;
-    private int boardHeight = 20;
+    public int boardWidth = 20;
+    public int boardHeight = 20;
 
     public void InitBoard(int width = 20, int height = 20)
     {

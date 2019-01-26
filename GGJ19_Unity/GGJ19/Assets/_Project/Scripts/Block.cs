@@ -29,7 +29,7 @@ public class Block : ScriptableObject
         if (dir < 0)
             dir = 4 + dir;
 
-        Block temp = new Block();
+        Block temp = ScriptableObject.CreateInstance<Block>();
         temp.CopyFrom(this);
 
         //rotate

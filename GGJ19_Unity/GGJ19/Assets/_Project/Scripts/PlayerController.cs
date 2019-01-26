@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     private Camera cam;
     private RaycastHit hit;
 
+    private bool usingMouse = false;
+
     private void Awake()
     {
         cam = Camera.main;
@@ -42,8 +44,13 @@ public class PlayerController : MonoBehaviour
         float placementZ = posZ;
 
         float mouseMag = Mathf.Abs(Input.GetAxis("Mouse X")) + Mathf.Abs(Input.GetAxis("Mouse Y"));
-        if (mouseMag > Mathf.Epsilon)
-        {
+        float joyH = Input.GetAxis("Horizontal");
+        float joyV = Input.GetAxis("Vertical");
+
+        if (mouseMag > Mathf.Epsilon) usingMouse = true;
+        else if (Mathf.Abs(joyH) + Mathf.Abs(joyV) > Mathf.Epsilon) usingMouse = false;
+
+        if (usingMouse) {
             Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
             if(Physics.Raycast(ray, out hit, 100))
             {
@@ -61,9 +68,6 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            float joyH = Input.GetAxis("Horizontal");
-            float joyV = Input.GetAxis("Vertical");
-
             //Vector3 moveDirection = cam.transform.forward * joyV + cam.transform.right * joyH;
 
             posX += joyH * Time.deltaTime * joySpeed;
