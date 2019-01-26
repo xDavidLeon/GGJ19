@@ -6,11 +6,16 @@ public class GameManager : Singleton<GameManager>
     public TileDatabase tileDatabase;
     public BlockDatabase blockDatabase;
 
+    public int boardWidth = 20;
+    public int boardHeight = 20;
     public Transform boardContainer;
+
+    public int numPlayers = 2;
+    public int currentPlayer = 0;
 
     void Start()
     {
-        board.InitBoard();
+        board.InitBoard(boardWidth, boardHeight);
 
         UpdateBoardTileAssets();
     }
@@ -60,8 +65,8 @@ public class GameManager : Singleton<GameManager>
     public void UpdateBoardTileAssets()
     {
         if(board == null || board.initialized == false) return;
-        for(int i = 0; i < board.width; i++)
-            for(int j = 0; j < board.height; j++)
+        for(int i = 0; i < boardWidth; i++)
+            for(int j = 0; j < boardHeight; j++)
             {
                 Board.Tile tile = board.tiles[i, j];
                 PlaceTileGameObject(i, j, tile.data.roomType);

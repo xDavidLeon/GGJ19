@@ -418,9 +418,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a995cc69cc43f4d4b91e103628d4fb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cam: {fileID: 1446669971}
   selectedBlock: {fileID: 11400000, guid: cac6b0e2b3474c94e89af811970d6368, type: 2}
   playBlock: {fileID: 698110217}
+  joySpeed: 15
   offsetX: -2.5
   offsetY: -2.5
 --- !u!4 &1098154615
