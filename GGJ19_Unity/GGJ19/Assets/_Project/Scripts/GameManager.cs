@@ -100,7 +100,10 @@ public class GameManager : Singleton<GameManager>
                     return false;
                 int has_cell = playBlock.block.GetValue(i, j);
                 if (has_cell != 0 && board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
+                {
+                    Debug.Log("not empty");
                     return false;
+                }
                 //check if player id near
                 if(!touching_player && has_cell == 1)
                     for(int k = 0; k < 4; ++k)
@@ -121,7 +124,10 @@ public class GameManager : Singleton<GameManager>
             }
 
         if (!touching_player) //add tip in GUI about not close to player
+        {
+            Debug.Log("far from player");
             return false;
+        }
 
         return true;
     }
