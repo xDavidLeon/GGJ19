@@ -33,15 +33,18 @@ public class Board : ScriptableObject
         public GameObject gObject;
     }
 
-    public int width = 20;
-    public int height = 20;
-
     public Tile[,] tiles;
 
     public bool initialized = false;
 
-    public void InitBoard()
+    private int boardWidth = 20;
+    private int boardHeight = 20;
+
+    public void InitBoard(int width = 20, int height = 20)
     {
+        boardWidth = width;
+        boardHeight = height;
+
         tiles = new Tile[width,height];
         for(int i = 0; i < width; i++)
             for(int j = 0; j < height; j++)

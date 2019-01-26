@@ -4,53 +4,86 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public Camera cam = null;
-
+    [Header("Block Selection")]
     public Block selectedBlock;
     public PlayBlock playBlock;
 
+    [Header("Input")]
+    public float joySpeed = 15.0f;
     public float offsetX = -2.5f;
     public float offsetY = -2.5f;
 
-    Plane plane;
+    private float posX = 0;
+    private float posZ = 0;
 
-    // Start is called before the first frame update
-    void Start()
+    private Plane plane;
+
+    private Camera cam;
+    private RaycastHit hit;
+
+    private void Awake()
     {
-        playBlock.SetData(selectedBlock, Board.ROOM_TYPE.KITCHEN, 0);
-        playBlock.Populate();
-
+        cam = Camera.main;
         plane = new Plane(Vector3.up, 0);
     }
 
-    // Update is called once per frame
+    void Start()
+    {
+        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), 0);
+        playBlock.Populate();
+    }
+
     void Update()
     {
         if (!cam || !playBlock)
             return;
 
-        Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
-        float enter = 0.0f;
+        float placementX = posX;
+        float placementZ = posZ;
 
-        if (plane.Raycast(ray, out enter))
+        float mouseMag = Mathf.Abs(Input.GetAxis("Mouse X")) + Mathf.Abs(Input.GetAxis("Mouse Y"));
+        if (mouseMag > Mathf.Epsilon)
         {
-            //Get the point that is clicked
-            Vector3 hitPoint = ray.GetPoint(enter);
+            Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
+            if(Physics.Raycast(ray, out hit, 100))
+            {
+                Vector3 hitPoint = hit.point;
+                Debug.DrawRay(ray.origin, hitPoint - ray.origin, Color.green);
 
-            int board_width = 20;
-            int board_height = 20;
+                posX = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
+                posZ = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
 
-            hitPoint.x = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0, board_width - 1) + 0.5f + offsetX;
-            hitPoint.z = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0, board_height - 1) + 0.5f + offsetY;
-            hitPoint.y = Constants.boardPlayblockHeight;
+                placementX = posX;
+                placementZ = posZ;
+            }
+            else
+                Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
+        }
+        else
+        {
+            float joyH = Input.GetAxis("Horizontal");
+            float joyV = Input.GetAxis("Vertical");
 
-            //Move your cube GameObject to the point where you clicked
-            playBlock.transform.position = hitPoint;
+            //Vector3 moveDirection = cam.transform.forward * joyV + cam.transform.right * joyH;
+
+            posX += joyH * Time.deltaTime * joySpeed;
+            posZ += joyV * Time.deltaTime * joySpeed;
+
+            placementX = Mathf.Clamp(Mathf.Round(posX - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
+            placementZ = Mathf.Clamp(Mathf.Round(posZ - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        // Move the playBlock to the target position
+        playBlock.transform.position = new Vector3(placementX, Constants.boardPlayblockHeight, placementZ);
+
+        if (Input.GetMouseButtonDown(0) || Input.GetButtonDown("Jump"))
         {
-            if (GameManager.Instance.PlacePlayBlock(playBlock))
+            Vector3 placementPosition = new Vector3(placementX, Constants.boardPlayblockHeight, placementZ);
+            playBlock.transform.position = placementPosition;
+
+            Debug.DrawLine(placementPosition, placementPosition + Vector3.up, Color.blue);
+
+            if(GameManager.Instance.PlacePlayBlock(playBlock))
             {
                 // Get new block
                 playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), 0);
