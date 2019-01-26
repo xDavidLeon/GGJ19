@@ -4,20 +4,6 @@ using UnityEngine.Assertions;
 
 public class GameManager : Singleton<GameManager>
 {
-    [System.Serializable]
-    public class PlayerData
-    {
-        // Input
-        public string horizontal, vertical, accept, rotate;
-        public float posX = 0;
-        public float posZ = 0;
-        public float placementX = 0;
-        public float placementZ = 0;
-        public Transform pointer;
-
-        public PlayBlock playBlock;
-    };
-
     public Board board;
     public TileDatabase tileDatabase;
     public BlockDatabase blockDatabase;
@@ -26,7 +12,7 @@ public class GameManager : Singleton<GameManager>
     public int boardHeight = 20;
     public Transform boardContainer;
 
-    public List<PlayerData> players;
+    public List<PlayerController> players;
 
     public int numPlayers = 2;
     public int currentPlayer = 0;
@@ -44,12 +30,7 @@ public class GameManager : Singleton<GameManager>
 
         board.InitBoard( boardWidth, boardHeight );
         for(int i = 0; i < numPlayers; ++i)
-        {
-            SetPlayerStart(i);
-            PlayerData p = players[i];
-            p.playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.ROOM_TYPE.CORRIDOR, i);
-            p.playBlock.Populate();
-        }
+            SetPlayerStartTiles(i);
         UpdateBoardTileAssets();
     }
 
@@ -58,7 +39,7 @@ public class GameManager : Singleton<GameManager>
 
     }
 
-    void SetPlayerStart( int player_id )
+    void SetPlayerStartTiles( int player_id )
     {
         int start_x = 0;
         int start_y = 0;
