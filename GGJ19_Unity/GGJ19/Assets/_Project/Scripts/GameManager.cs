@@ -1,8 +1,23 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public class GameManager : Singleton<GameManager>
 {
+    [System.Serializable]
+    public class PlayerData
+    {
+        // Input
+        public string horizontal, vertical, accept, rotate;
+        public float posX = 0;
+        public float posZ = 0;
+        public float placementX = 0;
+        public float placementZ = 0;
+        public Transform pointer;
+
+        public PlayBlock playBlock;
+    };
+
     public Board board;
     public TileDatabase tileDatabase;
     public BlockDatabase blockDatabase;
@@ -11,9 +26,13 @@ public class GameManager : Singleton<GameManager>
     public int boardHeight = 20;
     public Transform boardContainer;
 
+    public List<PlayerData> players;
+
     public int numPlayers = 2;
     public int currentPlayer = 0;
     Vector2[] offsets;
+
+    public int turn = 0;
 
     void Start()
     {
@@ -25,7 +44,12 @@ public class GameManager : Singleton<GameManager>
 
         board.InitBoard( boardWidth, boardHeight );
         for(int i = 0; i < numPlayers; ++i)
+        {
             SetPlayerStart(i);
+            PlayerData p = players[i];
+            p.playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.ROOM_TYPE.CORRIDOR, i);
+            p.playBlock.Populate();
+        }
         UpdateBoardTileAssets();
     }
 
@@ -139,6 +163,7 @@ public class GameManager : Singleton<GameManager>
     public void NextPlayer()
     {
         currentPlayer = (currentPlayer + 1) % numPlayers;
+        if (currentPlayer == 0) turn++;
     }
 
     #region VISUALS
@@ -220,7 +245,7 @@ public class GameManager : Singleton<GameManager>
     /// <returns></returns>
     public GameObject CreateTileGameObject(Board.ROOM_TYPE roomType)
     {
-        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
+        GameObject g = GameObject.Instantiate( tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
         g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
         g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;

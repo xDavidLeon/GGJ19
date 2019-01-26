@@ -4,26 +4,13 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [System.Serializable]
-    public class PlayerInput
-    {
-        public string horizontal, vertical, accept, rotate;
-        public float posX = 0;
-        public float posZ = 0;
-        public float placementX = 0;
-        public float placementZ = 0;
-        public Transform pointer;
-    };
-
     [Header("Block Selection")]
     public Block selectedBlock;
-    public PlayBlock playBlock;
 
     [Header("Input")]
     public float joySpeed = 15.0f;
     public float offsetX = -2.5f;
     public float offsetY = -2.5f;
-    public List<PlayerInput> playerInputs;
 
     private Plane plane;
 
@@ -40,82 +27,81 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), 0);
-        playBlock.Populate();
+
     }
 
     void Update()
     {
-        if (!cam || !playBlock)
+        if (!cam)
             return;
 
         for(int i = 0; i < GameManager.Instance.numPlayers; i++)
-            UpdatePlayerInput(playerInputs[i]);
+            UpdatePlayerInput(GameManager.Instance.players[i] );
     }
 
-    public void UpdatePlayerInput(PlayerInput pInput)
+    public void UpdatePlayerInput(GameManager.PlayerData pData)
     {
-        pInput.placementX = pInput.posX;
-        pInput.placementZ = pInput.posZ;
+        pData.placementX = pData.posX;
+        pData.placementZ = pData.posZ;
 
-        int pIndex = playerInputs.IndexOf(pInput);
+        int pIndex = GameManager.Instance.players.IndexOf(pData);
         bool myTurn = pIndex == GameManager.Instance.currentPlayer; 
-        //if (pIndex == 0)
-        //{
-        //    float mouseMag = Mathf.Abs(Input.GetAxis("Mouse X")) + Mathf.Abs(Input.GetAxis("Mouse Y"));
-        //    Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
-        //    if(Physics.Raycast(ray, out hit, 100))
-        //    {
-        //        Vector3 hitPoint = hit.point;
-        //        Debug.DrawRay(ray.origin, hitPoint - ray.origin, Color.green);
-
-        //        pInput.posX = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
-        //        pInput.posZ = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
-
-        //        pInput.placementX = pInput.posX;
-        //        pInput.placementZ = pInput.posZ;
-        //    }
-        //    else
-        //        Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
-        //}
-        
+        if (pIndex == 0)
         {
-            float joyH = Input.GetAxis(pInput.horizontal);
-            float joyV = Input.GetAxis(pInput.vertical);
-            pInput.posX += joyH * Time.deltaTime * joySpeed;
-            pInput.posZ += joyV * Time.deltaTime * joySpeed;
+            float mouseMag = Mathf.Abs(Input.GetAxis("Mouse X")) + Mathf.Abs(Input.GetAxis("Mouse Y"));
+            Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
+            if(Physics.Raycast(ray, out hit, 100))
+            {
+                Vector3 hitPoint = hit.point;
+                Debug.DrawRay(ray.origin, hitPoint - ray.origin, Color.green);
 
-            pInput.placementX = Mathf.Clamp(Mathf.Round(pInput.posX - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
-            pInput.placementZ = Mathf.Clamp(Mathf.Round(pInput.posZ - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
+                pData.posX = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
+                pData.posZ = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
+
+                pData.placementX = pData.posX;
+                pData.placementZ = pData.posZ;
+            }
+            else
+                Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
+        }
+        else
+        {
+            float joyH = Input.GetAxis(pData.horizontal);
+            float joyV = Input.GetAxis(pData.vertical);
+            pData.posX += joyH * Time.deltaTime * joySpeed;
+            pData.posZ += joyV * Time.deltaTime * joySpeed;
+
+            pData.placementX = Mathf.Clamp(Mathf.Round(pData.posX - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
+            pData.placementZ = Mathf.Clamp(Mathf.Round(pData.posZ - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
         }
 
-        pInput.pointer.position = Vector3.Lerp(pInput.pointer.position, new Vector3(pInput.placementX + 2, Constants.boardPlayblockHeight + 0.5f, pInput.placementZ + 2), Time.deltaTime * 4);
+        pData.pointer.position = Vector3.Lerp(pData.pointer.position, new Vector3(pData.placementX + 2, Constants.boardPlayblockHeight + 0.5f, pData.placementZ + 2), Time.deltaTime * 4);
 
         // Move the playBlock to the target position
         if(myTurn)
         {
-            playBlock.transform.position = new Vector3(pInput.placementX, Constants.boardPlayblockHeight, pInput.placementZ);
+            pData.playBlock.transform.position = new Vector3(pData.placementX, Constants.boardPlayblockHeight, pData.placementZ);
 
-            if(Input.GetMouseButtonDown(0) || Input.GetButtonDown(pInput.accept))
+            if(Input.GetMouseButtonDown(0) || Input.GetButtonDown(pData.accept))
             {
-                Vector3 placementPosition = new Vector3(pInput.placementX, Constants.boardPlayblockHeight, pInput.placementZ);
-                playBlock.transform.position = placementPosition;
+                Vector3 placementPosition = new Vector3(pData.placementX, Constants.boardPlayblockHeight, pData.placementZ);
+                pData.playBlock.transform.position = placementPosition;
 
                 Debug.DrawLine(placementPosition, placementPosition + Vector3.up, Color.blue);
 
-                if(GameManager.Instance.PlacePlayBlock(playBlock))
+                if(GameManager.Instance.PlacePlayBlock(pData.playBlock))
                 {
                     // Get new block
-                    playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayer);
-                    playBlock.Populate();
+                    pData.playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayer);
+                    pData.playBlock.Populate();
 
                     // TODO if it was a valid placement, check if game is over. If not, give control to next player
                     GameManager.Instance.NextPlayer();
                 }
             }
-            else if(Input.GetMouseButtonDown(1) || Input.GetButtonDown(pInput.rotate))
+            else if(Input.GetMouseButtonDown(1) || Input.GetButtonDown(pData.rotate))
             {
-                playBlock.Rotate(1);
+                pData.playBlock.Rotate(1);
             }
         }
         
