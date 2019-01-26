@@ -7,6 +7,11 @@ public class PlayerController : MonoBehaviour
 {
     private int playerId;
 
+    [Header("UI")]
+    public int score = 0;
+    public TMPro.TextMeshProUGUI textScore;
+    public CanvasGroup uiCanvasGroup;
+
     [Header("Input")]
     public float moveSpeed = 15.0f;
     public float offsetX = -2.5f;
@@ -24,6 +29,14 @@ public class PlayerController : MonoBehaviour
 
     private Camera cam;
     private RaycastHit hit;
+
+    public bool MyTurn
+    {
+        get
+        {
+            return playerId == GameManager.Instance.currentPlayerId;
+        }
+    }
 
     private void Awake()
     {
@@ -45,6 +58,11 @@ public class PlayerController : MonoBehaviour
             return;
 
         UpdatePlayerInput();
+
+        textScore.text = score.ToString();
+        if(MyTurn) uiCanvasGroup.alpha = 1.0f;
+        else uiCanvasGroup.alpha = 0.5f;
+
     }
 
     public void UpdatePlayerInput()
@@ -52,7 +70,6 @@ public class PlayerController : MonoBehaviour
         placementX = posX;
         placementZ = posZ;
 
-        bool myTurn = playerId == GameManager.Instance.currentPlayer;
         Controller controller = playerInput.controllers.GetLastActiveController();
         if(controller == null) return;
         if (controller.type == ControllerType.Mouse)
@@ -83,11 +100,14 @@ public class PlayerController : MonoBehaviour
             placementZ = Mathf.Clamp(Mathf.Round(posZ - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
         }
 
+        if(playerInput.GetButtonDown("Rotate"))
+            playBlock.Rotate(1);
+
         pointer.position = Vector3.Lerp(pointer.position, new Vector3(placementX + 2, Constants.boardPlayblockHeight + 0.5f, placementZ + 2), Time.deltaTime * 4);
         playBlock.transform.position = new Vector3(placementX, Constants.boardPlayblockHeight, placementZ);
 
         // Move the playBlock to the target position
-        if(myTurn)
+        if(MyTurn)
         {
             if(playerInput.GetButtonDown("Select"))
             {
@@ -96,21 +116,15 @@ public class PlayerController : MonoBehaviour
 
                 Debug.DrawLine(placementPosition, placementPosition + Vector3.up, Color.blue);
 
-                if(GameManager.Instance.PlacePlayBlock(playBlock))
-                {
-                    // Get new block
-                    playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayer);
-                    playBlock.Populate();
-
-                    // TODO if it was a valid placement, check if game is over. If not, give control to next player
-                    GameManager.Instance.NextPlayer();
-                }
-            }
-            else if(playerInput.GetButtonDown("Rotate"))
-            {
-                playBlock.Rotate(1);
+                if(GameManager.Instance.PlacePlayBlock(playBlock)) GameManager.Instance.NextTurn();
             }
         }
         
+    }
+
+    public void RandomBlock()
+    {
+        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayerId);
+        playBlock.Populate();
     }
 }

@@ -39,9 +39,11 @@ public class Board : ScriptableObject
     public class Tile
     {
         public TileData data;
-        public GameObject gObject; //floor
-        public GameObject gTopWallObject = null; //topwall
-        public GameObject gLeftWallObject = null; //leftwall
+        public GameObject gFloor; //floor
+        public GameObject gWallLeft = null; //topwall
+        public GameObject gWallRight = null; //topwall
+        public GameObject gWallTop = null; //topwall
+        public GameObject gWallBot = null; //topwall
 
         public void Clear()
         {
