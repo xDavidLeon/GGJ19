@@ -11,8 +11,8 @@ public class Board : ScriptableObject
         EMPTY = 0,
         WALL,
         START,
-        KITCHEN,
         CORRIDOR,
+        KITCHEN,
         DORM,
         BATH,
         LIVING
@@ -112,6 +112,8 @@ public class Board : ScriptableObject
 
     public Tile GetTile(int x, int y)
     {
+        if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight)
+            return null;
         return tiles[x, y];
     }
 
@@ -229,7 +231,8 @@ public class Board : ScriptableObject
                 }
 
                 //room score found
-                score += num_tiles * num_blocks;
+                //score += num_tiles * num_blocks;
+                score += num_tiles;
                 room_id++;
             }
 

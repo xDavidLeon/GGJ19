@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
+    public enum GAME_MODE { 
+        CONQUEST = 1,
+        HOME = 2
+    };
+
+    public GAME_MODE mode = GAME_MODE.CONQUEST;
     public Board board;
     public TileDatabase tileDatabase;
     public BlockDatabase blockDatabase;
@@ -70,7 +76,7 @@ public class GameManager : Singleton<GameManager>
         if(player_id == 3)
             start_y = boardHeight - 1;
 
-        Board.Tile tile = board.GetTile(start_x, start_y);
+        Board.Tile tile = board.GetTile( start_x, start_y );
         tile.data.player = player_id;
         tile.data.roomType = Board.ROOM_TYPE.START;
     }
@@ -155,8 +161,29 @@ public class GameManager : Singleton<GameManager>
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                if(playBlock.block.GetValue(i, j) != 0)
-                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
+                if (playBlock.block.GetValue(i, j) == 0)
+                    continue;
+                
+                PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
+
+                //conquer neightbours
+                if (mode == GAME_MODE.CONQUEST)
+                {
+                    for (int k = 0; k < 4; ++k)
+                    {
+                        Vector2 offset = offsets[k];
+                        Board.Tile next = board.GetTile(startX + i + (int)offset.x, startY + j + (int)offset.y);
+                        if (next == null)
+                            continue;
+                        if (next.data.roomType != Board.ROOM_TYPE.WALL &&
+                            next.data.roomType != Board.ROOM_TYPE.EMPTY &&
+                            next.data.roomType != Board.ROOM_TYPE.START)
+                        {
+                            next.data.player = currentPlayerId;
+                            next.data.roomType = playBlock.roomType;
+                        }
+                    }
+                }
             }
         return true;
     }
@@ -181,7 +208,7 @@ public class GameManager : Singleton<GameManager>
         CurrentPlayer.score = board.ComputePlayerScore(CurrentPlayer.playerId);
 
         // Get new block
-        CurrentPlayer.RandomBlock();
+        CurrentPlayer.NewBlock();
 
         UpdateBoardTileAssets();
 
@@ -283,7 +310,7 @@ public class GameManager : Singleton<GameManager>
             GameObject.Destroy(targetGO);
 
         GameObject gPrefab = tileDatabase.prefabWall;
-        if(targetTile.data.roomType == Board.ROOM_TYPE.WALL || targetTile.data.roomType == Board.ROOM_TYPE.EMPTY) gPrefab = tileDatabase.prefabWall;
+        if(targetTile.data.roomType == Board.ROOM_TYPE.WALL || targetTile.data.roomType == Board.ROOM_TYPE.EMPTY || targetTile.data.player != tile.data.player) gPrefab = tileDatabase.prefabWall;
         else if(targetTile.data.roomType != tile.data.roomType) gPrefab = tileDatabase.prefabDoor;
         else return null;
 
