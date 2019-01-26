@@ -19,6 +19,7 @@ public class GameManager : Singleton<GameManager>
 
     public int turn = 0;
     public int last_block_id = 0;
+    public bool force_corridors = false;
 
     public PlayerController CurrentPlayer
     {
@@ -80,6 +81,7 @@ public class GameManager : Singleton<GameManager>
         int startY = (int)playBlock.transform.position.z;
 
         bool touching_player = false;
+        bool is_corridor = playBlock.roomType == Board.ROOM_TYPE.CORRIDOR;
 
         //check if placeable
         for(int i = 0; i < 4; i++)
@@ -107,6 +109,10 @@ public class GameManager : Singleton<GameManager>
                         Board.Tile tile = board.GetTile(x2, y2);
                         if(tile.data.player == currentPlayerId)
                         {
+                            if (force_corridors && (
+                                (is_corridor && tile.data.roomType == Board.ROOM_TYPE.CORRIDOR) ||
+                                (!is_corridor && tile.data.roomType != Board.ROOM_TYPE.CORRIDOR)))
+                                continue;
                             touching_player = true;
                             break;
                         }
@@ -162,7 +168,6 @@ public class GameManager : Singleton<GameManager>
 
     public void NextTurn()
     {
-
         CurrentPlayer.score = board.ComputePlayerScore( CurrentPlayer.playerId );
 
         // Get new block
@@ -273,37 +278,6 @@ public class GameManager : Singleton<GameManager>
         }
 
         return g;
-    }
-
-    /// <summary>
-    /// Given a board region, repopulates prefabs for the walls
-    /// </summary>
-    /// <param name="x">The x coordinate.</param>
-    /// <param name="y">The y coordinate.</param>
-    /// <param name="w">The width.</param>
-    /// <param name="h">The height.</param>
-    public void updateWallsGameObjects()
-    {
-        for(int i = 1; i < board.boardWidth - 1; ++i)
-            for(int j = 1; j < board.boardHeight - 1; ++j)
-            {
-                Board.Tile top_tile = board.tiles[i - 1, j];
-                Board.Tile left_tile = board.tiles[i, j - 1];
-                Board.Tile tile = board.tiles[i, j];
-
-                /*
-                if (board.tiles[x, y].gObject != null)
-                    GameObject.Destroy(board.tiles[x, y].gObject);
-
-                GameObject g = CreateTileGameObject(roomType);
-
-                g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
-                g.transform.parent = boardContainer;
-                g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
-
-                board.tiles[x, y].gObject = g;
-                */
-            }
     }
 
     /// <summary>
