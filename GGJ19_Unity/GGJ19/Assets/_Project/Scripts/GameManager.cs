@@ -70,6 +70,11 @@ public class GameManager : Singleton<GameManager>
         PlaceTileGameObject(x, y, tileState);
     }
 
+    public void NextPlayer()
+    {
+        currentPlayer = (currentPlayer + 1) % numPlayers;
+    }
+
     #region VISUALS
 
     /// <summary>
