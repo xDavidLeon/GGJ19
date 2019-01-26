@@ -24,19 +24,11 @@ public class PlayBlock : MonoBehaviour
             {
                 if(block.blockBoard[j * 4 + i] != 0)
                 {
-                    GameObject g = CreateTileGameObject(block, roomType);
+                    GameObject g = GameManager.Instance.CreateTileGameObject(roomType);
                     g.transform.SetParent(this.transform);
                     g.transform.localPosition = new Vector3(i, 0.0f, j);
                 }
             }
-    }
-
-    public GameObject CreateTileGameObject(Block block, Board.ROOM_TYPE tileState)
-    {
-        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
-        g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
-        g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[tileState];
-        return g;
     }
 
     [ContextMenu("Clear")]
