@@ -33,6 +33,7 @@ public class GameManager : Singleton<GameManager>
     Vector2[] offsets;
 
     public int turn = 0;
+    public int last_block_id = 0;
 
     void Start()
     {
@@ -41,6 +42,8 @@ public class GameManager : Singleton<GameManager>
         offsets[1].Set(+1, 0);
         offsets[2].Set(0, -1);
         offsets[3].Set(0, +1);
+
+        last_block_id = 0;
 
         board.InitBoard( boardWidth, boardHeight );
         for(int i = 0; i < numPlayers; ++i)
@@ -141,13 +144,15 @@ public class GameManager : Singleton<GameManager>
     {
         if (CheckPlacePlayBlock(playBlock) == false)
             return false;
+
+        int block_id = last_block_id++;
         int startX = (int)playBlock.transform.position.x;
         int startY = (int)playBlock.transform.position.z;
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
             {
                 if (playBlock.block.GetValue(i, j) != 0)
-                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayer);
+                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayer, block_id);
             }
         return true;
     }
@@ -158,18 +163,26 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="tileState"></param>
-    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id )
+    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id, int block_id )
     {
         Board.Tile t = board.GetTile(x, y);
         t.data.roomType = roomState;
         t.data.player = player_id;
-        PlaceTileGameObject(x, y, roomState);
+        t.block_id = block_id;
+        PlaceTileGameObject( x, y, roomState );
     }
 
-    public void NextPlayer()
+    public void onEndPlayerTurn()
     {
+        // TODO if it was a valid placement, check if game is over. If not, give control to next player
+        PlayerData p = players[currentPlayer];
         currentPlayer = (currentPlayer + 1) % numPlayers;
-        if (currentPlayer == 0) turn++;
+
+
+        if (currentPlayer == 0)
+        {
+            turn++;
+        }
     }
 
     #region VISUALS

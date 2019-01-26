@@ -31,13 +31,16 @@ public class Board : ScriptableObject
             player = -1;
             sector = -1;
             connected = false;
-            roomType = ROOM_TYPE.EMPTY;    
+            roomType = ROOM_TYPE.EMPTY;
         }
     }
 
     [System.Serializable]
     public class Tile
     {
+        public int pos_x;
+        public int pos_y;
+        public int block_id;
         public TileData data;
         public GameObject gObject; //floor
         public GameObject gTopWallObject = null; //topwall
@@ -45,6 +48,9 @@ public class Board : ScriptableObject
 
         public void Clear()
         {
+            pos_x = -1;
+            pos_y = -1;
+            block_id = -1;
             data.connected = false;
             data.player = -1;
             data.roomType = ROOM_TYPE.EMPTY;
@@ -61,23 +67,33 @@ public class Board : ScriptableObject
     public int boardWidth = 20;
     public int boardHeight = 20;
 
+    Vector2[] offsets;
+
     public void InitBoard(int width = 20, int height = 20)
     {
         boardWidth = width;
         boardHeight = height;
 
-        tiles = new Tile[width,height];
-        for(int i = 0; i < width; i++)
-            for(int j = 0; j < height; j++)
+        offsets = new Vector2[4];
+        offsets[0].Set(-1, 0);
+        offsets[1].Set(+1, 0);
+        offsets[2].Set(0, -1);
+        offsets[3].Set(0, +1);
+
+        tiles = new Tile[width, height];
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
             {
                 Tile tile = new Tile();
                 tiles[i, j] = tile;
+                tile.pos_x = i;
+                tile.pos_y = j;
 
-                TileData t =  new TileData();
+                TileData t = new TileData();
                 tiles[i, j].data = t;
 
-                if(i == 0 || i == width - 1) SetTileState(i,j, ROOM_TYPE.WALL);
-                else if(j == 0 || j == height - 1) SetTileState(i, j, ROOM_TYPE.WALL);
+                if (i == 0 || i == width - 1) SetTileState(i, j, ROOM_TYPE.WALL);
+                else if (j == 0 || j == height - 1) SetTileState(i, j, ROOM_TYPE.WALL);
                 else SetTileState(i, j, ROOM_TYPE.EMPTY);
             }
 
@@ -119,6 +135,84 @@ public class Board : ScriptableObject
     public static ROOM_TYPE GetRandomRoomType()
     {
         int n = System.Enum.GetNames(typeof(ROOM_TYPE)).Length;
-        return (ROOM_TYPE) Random.Range(0, n - 3) + 3;
+        return (ROOM_TYPE)Random.Range(0, n - 3) + 3;
     }
+
+    public int ComputePlayerScore( int player_id )
+    {
+        int score = 0;
+
+        int sector_id = 0;
+
+        //reset sectors
+        for (int i = 0; i < boardWidth; i++)
+            for (int j = 0; j < boardHeight; j++)
+            {
+                Tile tile = GetTile(i, j);
+                if (tile.data.player != player_id)
+                    continue;
+                tile.data.sector = -1;
+            }
+
+        //search player sectors
+        List<Tile> pending = new List<Tile>();
+        int[] used_blocks = new int[ GameManager.Instance.last_block_id ];
+        for (int i = 0; i < GameManager.Instance.last_block_id; ++i)
+            used_blocks[i] = 0;
+
+        for (int i = 1; i < boardWidth - 1; i++)
+            for (int j = 1; j < boardHeight - 1; j++)
+            {
+                Tile tile = GetTile(i, j);
+
+                //needs to expand
+                if (tile.data.player != player_id || tile.data.sector != -1)
+                    continue;
+
+                int room_size = 1; //num tiles per room
+                int num_blocks = 1; //num blocks per room
+
+                tile.data.sector = sector_id++;
+                pending.Clear();
+                pending.Add(GetTile(i - 1, j));
+                pending.Add(GetTile(i + 1, j));
+                pending.Add(GetTile(i, j - 1));
+                pending.Add(GetTile(i, j + 1));
+
+                //compute sector size
+                while( pending.Count > 0 )
+                {
+                    Tile current = pending[pending.Count - 1];
+                    pending.RemoveAt(pending.Count - 1);
+
+                    if (current.data.sector != -1 || 
+                        current.data.player != player_id || 
+                        current.data.roomType == ROOM_TYPE.EMPTY )
+                        continue;
+
+                    //sector_size
+                    room_size++;
+                    if(used_blocks[current.block_id] == 0)
+                    {
+                        num_blocks++;
+                        used_blocks[current.block_id] = 1; //mark as used
+                    }
+
+                    if( tile.pos_x > 1)
+                        pending.Add(GetTile( tile.pos_x - 1, j));
+                    if (tile.pos_x < boardWidth - 1)
+                        pending.Add(GetTile(i + 1, j));
+                    if (tile.pos_y > 1)
+                        pending.Add(GetTile(i, j - 1));
+                    if (tile.pos_y < boardHeight - 1)
+                        pending.Add(GetTile(i, j + 1));
+                }
+
+                //room score found
+                score += room_size * num_blocks;
+            }
+
+        return score;
+    }
+
 }

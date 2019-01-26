@@ -95,8 +95,7 @@ public class PlayerController : MonoBehaviour
                     pData.playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayer);
                     pData.playBlock.Populate();
 
-                    // TODO if it was a valid placement, check if game is over. If not, give control to next player
-                    GameManager.Instance.NextPlayer();
+                    GameManager.Instance.onEndPlayerTurn();
                 }
             }
             else if(Input.GetMouseButtonDown(1) || Input.GetButtonDown(pData.rotate))
