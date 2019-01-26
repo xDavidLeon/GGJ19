@@ -179,7 +179,7 @@ public class Board : ScriptableObject
                 if (tile.data.player != player_id || tile.room_id != -1)
                     continue;
 
-                int room_size = 1; //num tiles per room
+                int num_tiles = 1; //num tiles per room
                 int num_blocks = 1; //num blocks per room
 
                 tile.room_id = room_id;
@@ -205,14 +205,14 @@ public class Board : ScriptableObject
                     current.room_id = room_id;
 
                     //sector_size
-                    room_size++;
+                    num_tiles++;
                     if(used_blocks[current.block_id] == 0)
                     {
                         num_blocks++;
                         used_blocks[current.block_id] = 1; //mark as used
                     }
 
-                    if (room_size > 1024)
+                    if (num_tiles > 1024)
                     {
                         Debug.Log("ERROR IN SCORE");
                         return -1;
@@ -229,7 +229,7 @@ public class Board : ScriptableObject
                 }
 
                 //room score found
-                score += room_size * num_blocks;
+                score += num_tiles * num_blocks;
                 room_id++;
             }
 

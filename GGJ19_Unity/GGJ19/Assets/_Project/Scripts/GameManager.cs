@@ -19,7 +19,7 @@ public class GameManager : Singleton<GameManager>
 
     public int turn = 0;
     public int last_block_id = 0;
-    public bool force_corridors = false;
+    public bool force_corridors = true;
 
     public PlayerController CurrentPlayer
     {
@@ -42,6 +42,12 @@ public class GameManager : Singleton<GameManager>
         board.InitBoard(boardWidth, boardHeight);
         for(int i = 0; i < numPlayers; ++i)
             SetPlayerStartTiles(i);
+
+        board.GetTile( (int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.25f) ).data.roomType = Board.ROOM_TYPE.WALL;
+        board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
+        board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
+        board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
+
         UpdateBoardTileAssets();
     }
 
@@ -109,10 +115,14 @@ public class GameManager : Singleton<GameManager>
                         Board.Tile tile = board.GetTile(x2, y2);
                         if(tile.data.player == currentPlayerId)
                         {
-                            if (force_corridors && (
+                            //if not touching a corridor
+                            if (force_corridors && tile.data.roomType != playBlock.roomType && (
                                 (is_corridor && tile.data.roomType == Board.ROOM_TYPE.CORRIDOR) ||
                                 (!is_corridor && tile.data.roomType != Board.ROOM_TYPE.CORRIDOR)))
+                            {
+                                Debug.Log("wrong corridor connection");
                                 continue;
+                            }
                             touching_player = true;
                             break;
                         }
