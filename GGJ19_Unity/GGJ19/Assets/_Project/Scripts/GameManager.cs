@@ -18,6 +18,7 @@ public class GameManager : Singleton<GameManager>
     Vector2[] offsets;
 
     public int turn = 0;
+    public int last_block_id = 0;
 
     public PlayerController CurrentPlayer
     {
@@ -34,6 +35,8 @@ public class GameManager : Singleton<GameManager>
         offsets[1].Set(+1, 0);
         offsets[2].Set(0, -1);
         offsets[3].Set(0, +1);
+
+        last_block_id = 0;
 
         board.InitBoard(boardWidth, boardHeight);
         for(int i = 0; i < numPlayers; ++i)
@@ -127,15 +130,17 @@ public class GameManager : Singleton<GameManager>
     /// <param name="playBlock">Play block.</param>
     public bool PlacePlayBlock(PlayBlock playBlock)
     {
-        if(CheckPlacePlayBlock(playBlock) == false)
+        if (CheckPlacePlayBlock(playBlock) == false)
             return false;
+
+        int block_id = last_block_id++;
         int startX = (int)playBlock.transform.position.x;
         int startY = (int)playBlock.transform.position.z;
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                if(playBlock.block.GetValue(i, j) != 0)
-                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId);
+                if (playBlock.block.GetValue(i, j) != 0)
+                    PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
             }
         return true;
     }
@@ -146,16 +151,20 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="tileState"></param>
-    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id)
+    public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id, int block_id )
     {
         Board.Tile t = board.GetTile(x, y);
         t.data.roomType = roomState;
         t.data.player = player_id;
-        PlaceTileGameObject(x, y, roomState);
+        t.block_id = block_id;
+        PlaceTileGameObject( x, y, roomState );
     }
 
     public void NextTurn()
     {
+
+        CurrentPlayer.score = board.ComputePlayerScore( CurrentPlayer.playerId );
+
         // Get new block
         CurrentPlayer.RandomBlock();
 

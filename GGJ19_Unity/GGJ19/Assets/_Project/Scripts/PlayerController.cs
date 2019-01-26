@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private int playerId;
+    public int playerId;
 
     [Header("UI")]
     public int score = 0;
@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
                 if(GameManager.Instance.PlacePlayBlock(playBlock)) GameManager.Instance.NextTurn();
             }
         }
-        
+
     }
 
     public void RandomBlock()
