@@ -9,11 +9,16 @@ public class GameManager : MonoBehaviour
 
     public Material[] matTileFloor;
 
+    public Block selectedBlock;
+    public Transform boardContainer;
+
     void Start()
     {
         board.InitBoard();
 
         InitBoardAssets();
+
+        PlaceBlock(selectedBlock, 0, 0);
     }
 
     void Update()
@@ -28,7 +33,7 @@ public class GameManager : MonoBehaviour
             for(int j = 0; j < board.height; j++)
             {
                 Board.Tile tile = board.tiles[i, j];
-                SetTileGameObject(i, j, tile.data.state);
+                SetTileGameObject(i, j, tile.data.roomType);
             }
     }
 
@@ -38,17 +43,17 @@ public class GameManager : MonoBehaviour
             for(int j = 0; j < 4; j++)
             {
                 if (block.blockBoard[j*4 + i] != 0)
-                    PlaceTile(startX + i, startY + j, Board.TILE_STATE.KITCHEN);
+                    PlaceTile(startX + i, startY + j, Board.ROOM_TYPE.KITCHEN);
             }
     }
 
-    public void PlaceTile(int x, int y, Board.TILE_STATE tileState)
+    public void PlaceTile(int x, int y, Board.ROOM_TYPE tileState)
     {
         board.SetTileState(x, y, tileState);
         SetTileGameObject(x, y, tileState);
     }
 
-    public void SetTileGameObject(int x, int y, Board.TILE_STATE tileState)
+    public void SetTileGameObject(int x, int y, Board.ROOM_TYPE tileState)
     {
         Board.Tile tile = board.tiles[x, y];
 
@@ -57,8 +62,18 @@ public class GameManager : MonoBehaviour
 
         GameObject g = GameObject.Instantiate(prefabTileFloor, new Vector3(x, boardHeight, y), Quaternion.identity);
         g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
-        g.GetComponent<MeshRenderer>().material = matTileFloor[(int)tile.data.state];
+        g.GetComponent<MeshRenderer>().material = matTileFloor[(int)tile.data.roomType];
         board.tiles[x, y].gObject = g;
+
+        g.transform.parent = boardContainer;
+    }
+
+    public GameObject CreateTileGameObject(Block block, Board.ROOM_TYPE tileState)
+    {
+        GameObject g = GameObject.Instantiate(prefabTileFloor, new Vector3(0, boardHeight, 0), Quaternion.identity);
+        g.transform.localScale = new Vector3(0.95f, 0.95f, 0.95f);
+        g.GetComponent<MeshRenderer>().material = matTileFloor[(int)tileState];
+        return g;
     }
 
     private void OnDrawGizmosSelected()

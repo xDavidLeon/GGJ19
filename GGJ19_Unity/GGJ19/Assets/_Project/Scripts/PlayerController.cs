@@ -5,21 +5,29 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-    public GameObject block = null;
     public Camera cam = null;
+
+    public Block selectedBlock;
+    public PlayBlock playBlock;
+
+    public float offsetX = -2.5f;
+    public float offsetY = -2.5f;
 
     Plane plane;
 
     // Start is called before the first frame update
     void Start()
     {
+        playBlock.SetData(selectedBlock, Board.ROOM_TYPE.KITCHEN, 0);
+        playBlock.Populate();
+
         plane = new Plane(Vector3.up, 0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!cam || !block)
+        if (!cam || !playBlock)
             return;
 
         Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
@@ -33,11 +41,12 @@ public class PlayerController : MonoBehaviour
             int board_width = 20;
             int board_height = 20;
 
-            hitPoint.x = Mathf.Clamp( Mathf.Round(hitPoint.x - 0.5f), 0, board_width-1) + 0.5f;
-            hitPoint.z = Mathf.Clamp( Mathf.Round(hitPoint.z - 0.5f), 0, board_height-1) + 0.5f;
+            hitPoint.x = Mathf.Clamp( Mathf.Round(hitPoint.x - 0.5f), 0, board_width-1) + 0.5f + offsetX;
+            hitPoint.z = Mathf.Clamp( Mathf.Round(hitPoint.z - 0.5f), 0, board_height-1) + 0.5f + offsetY;
+            hitPoint.y = Constants.boardPlayblockHeight;
 
             //Move your cube GameObject to the point where you clicked
-            block.transform.position = hitPoint;
+            playBlock.transform.position = hitPoint;
         }
     }
 }

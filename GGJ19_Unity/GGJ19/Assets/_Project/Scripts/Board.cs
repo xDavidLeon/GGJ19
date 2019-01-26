@@ -5,7 +5,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Board", menuName = "GGJ19/Create Board", order = 1)]
 public class Board : ScriptableObject
 {
-    public enum TILE_STATE
+    [System.Serializable]
+    public enum ROOM_TYPE
     {
         EMPTY = 0,
         WALL,
@@ -19,7 +20,7 @@ public class Board : ScriptableObject
     [System.Serializable]
     public struct TileData
     {
-        public TILE_STATE state;
+        public ROOM_TYPE roomType;
         public int player;
         public bool connected;
     }
@@ -50,17 +51,17 @@ public class Board : ScriptableObject
                 TileData t =  new TileData();
                 tiles[i, j].data = t;
 
-                if(i == 0 || i == width - 1) SetTileState(i,j, TILE_STATE.WALL);
-                else if(j == 0 || j == height - 1) SetTileState(i, j, TILE_STATE.WALL);
-                else SetTileState(i, j, TILE_STATE.EMPTY);
+                if(i == 0 || i == width - 1) SetTileState(i,j, ROOM_TYPE.WALL);
+                else if(j == 0 || j == height - 1) SetTileState(i, j, ROOM_TYPE.WALL);
+                else SetTileState(i, j, ROOM_TYPE.EMPTY);
             }
 
         initialized = true;
     }
 
-    public void SetTileState(int x, int y, TILE_STATE state)
+    public void SetTileState(int x, int y, ROOM_TYPE state)
     {
-        tiles[x, y].data.state = state;
+        tiles[x, y].data.roomType = state;
     }
 
     public void SetTilePlayer(int x, int y, int player)
