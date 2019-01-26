@@ -40,8 +40,8 @@ public class PlayerController : MonoBehaviour
             int board_width = 20;
             int board_height = 20;
 
-            hitPoint.x = Mathf.Clamp( Mathf.Round(hitPoint.x - 0.5f), 0, board_width-1) + 0.5f + offsetX;
-            hitPoint.z = Mathf.Clamp( Mathf.Round(hitPoint.z - 0.5f), 0, board_height-1) + 0.5f + offsetY;
+            hitPoint.x = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0, board_width - 1) + 0.5f + offsetX;
+            hitPoint.z = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0, board_height - 1) + 0.5f + offsetY;
             hitPoint.y = Constants.boardPlayblockHeight;
 
             //Move your cube GameObject to the point where you clicked
@@ -56,8 +56,12 @@ public class PlayerController : MonoBehaviour
                 playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), 0);
                 playBlock.Populate();
             }
-            
-        }
-    }
 
+        }
+        if (Input.GetMouseButtonDown(1))
+        {
+            playBlock.Rotate(1);
+        }
+
+    }
 }

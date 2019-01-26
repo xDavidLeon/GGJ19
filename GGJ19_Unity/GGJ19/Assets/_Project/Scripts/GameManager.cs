@@ -29,14 +29,25 @@ public class GameManager : Singleton<GameManager>
     {
         int startX = (int) playBlock.transform.position.x;
         int startY = (int) playBlock.transform.position.z;
+
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                // @TODO Check that the tile doesn's access out of bounds
+                int x = startX + i;
+                int y = startY + j;
+                if (x < 0 || x >= board.width || y < 0 || y >= board.height)
+                    return false;
+                if (board.GetTileState(x, y) != Board.ROOM_TYPE.EMPTY)
+                    return false;
+            }
 
-                if (playBlock.block.blockBoard[j*4 + i] != 0)
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+            {
+                if (playBlock.block.blockBoard[j * 4 + i] != 0)
                     PlaceTile(startX + i, startY + j, playBlock.roomType);
             }
+
         return true;
     }
 
@@ -85,6 +96,7 @@ public class GameManager : Singleton<GameManager>
 
         GameObject g = CreateTileGameObject(roomType);
 
+        g.SetActive( roomType != Board.ROOM_TYPE.EMPTY );
         g.transform.parent = boardContainer;
         g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
 
