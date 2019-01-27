@@ -152,6 +152,61 @@ public class Board : ScriptableObject
         return (ROOM_TYPE)Random.Range(0, n - 3) + 3;
     }
 
+    public void ComputeConnectivity(int player_id)
+    {
+        PlayerController pc = GameManager.Instance.players[player_id];
+
+        //clear
+        for (int i = 0; i < boardWidth; i++)
+            for (int j = 0; j < boardHeight; j++)
+            {
+                Tile tile = GetTile(i, j);
+                if (tile.data.player != player_id)
+                    continue;
+                tile.data.connected = false;
+            }
+
+        //compute connectivity
+        Tile start = GetTile(pc.startX, pc.startY);
+        start.data.connected = true;
+
+        List<Tile> pending = new List<Tile>();
+        pending.Add(start);
+
+        while (pending.Count > 0)
+        {
+            Tile current = pending[pending.Count - 1];
+            pending.RemoveAt(pending.Count - 1);
+
+            if (current.data.player != player_id || 
+                current.data.roomType < ROOM_TYPE.KITCHEN || 
+                current.data.connected )
+                continue;
+
+            current.data.connected = true;
+
+            if (current.pos_x > 1)
+                pending.Add(GetTile(current.pos_x - 1, current.pos_y));
+            if (current.pos_x < boardWidth - 1)
+                pending.Add(GetTile(current.pos_x + 1, current.pos_y));
+            if (current.pos_y > 1)
+                pending.Add(GetTile(current.pos_x, current.pos_y - 1));
+            if (current.pos_y < boardHeight - 1)
+                pending.Add(GetTile(current.pos_x, current.pos_y + 1));
+        }
+
+        //visualize
+        /*
+        for (int i = 0; i < boardWidth; i++)
+            for (int j = 0; j < boardHeight; j++)
+            {
+                Tile tile = GetTile(i, j);
+                if (tile.data.player != player_id)
+                    continue;
+            }                   
+        */
+    }
+
     public int ComputePlayerScore( int player_id )
     {
         int score = 0;
