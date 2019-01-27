@@ -367,7 +367,7 @@ public class Board : ScriptableObject
 
                 //room score found
                 //score += num_tiles * num_blocks;
-                score += num_internal_tiles;
+                score += num_tiles + num_internal_tiles;
                 room_id++;
             }
 
