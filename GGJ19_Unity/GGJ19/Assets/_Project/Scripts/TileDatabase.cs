@@ -14,7 +14,9 @@ public class TileDatabase : ScriptableObject
     [Header("Prefabs")]
     public GameObject prefabTileFloor;
     public GameObject prefabWall;
+    public GameObject prefabWallBlock;
     public GameObject prefabDoor;
+    public GameObject prefabLight;
     public WallPropDictionary prefabWallProps;
 
     [Header("Settings")]

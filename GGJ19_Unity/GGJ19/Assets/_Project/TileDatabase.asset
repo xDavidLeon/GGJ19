@@ -16,7 +16,11 @@ MonoBehaviour:
     type: 3}
   prefabWall: {fileID: 3930643431530456623, guid: d156c9133198ff249a3f54392dc28a2b,
     type: 3}
+  prefabWallBlock: {fileID: 3064969134979496934, guid: 53e56a38a6d7a624daf46dbd5c6fece9,
+    type: 3}
   prefabDoor: {fileID: 9021573114647157446, guid: 0453b60db80815e46862fe00182e88ff,
+    type: 3}
+  prefabLight: {fileID: 8661024821355653383, guid: 1e16643bb505e054190ce60e175e224f,
     type: 3}
   prefabWallProps:
     reorderableList:
