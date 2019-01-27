@@ -195,8 +195,9 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e736c5c463664773a5cc0c6f9d2b6c1, type: 2}
+  m_sharedMaterial: {fileID: 21739308700735462, guid: 2e736c5c463664773a5cc0c6f9d2b6c1,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -221,13 +222,13 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 8
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_textAlignment: 513
   m_isAlignmentEnumConverted: 1
   m_characterSpacing: 0
@@ -353,10 +354,11 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: 'Score:'
+  m_text: Score
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e736c5c463664773a5cc0c6f9d2b6c1, type: 2}
+  m_sharedMaterial: {fileID: 21739308700735462, guid: 2e736c5c463664773a5cc0c6f9d2b6c1,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -381,13 +383,13 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 8
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_textAlignment: 513
   m_isAlignmentEnumConverted: 1
   m_characterSpacing: 0
@@ -422,7 +424,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 6501413673113276706}
-    characterCount: 6
+    characterCount: 5
     spriteCount: 0
     spaceCount: 0
     wordCount: 1
@@ -5219,12 +5221,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a995cc69cc43f4d4b91e103628d4fb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerId: 0
   score: 0
   textScore: {fileID: 4313696141795952626}
   uiCanvasGroup: {fileID: 2768408004241901684}
   moveSpeed: 15
   offsetX: -2.5
   offsetY: -2.5
+  startX: -1
+  startY: -1
   pointer: {fileID: 7776593539346186967}
   playBlock: {fileID: 6162857579334045254}
 --- !u!1 &5484495803437851566
@@ -5356,14 +5361,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.9150943, b: 0.870321, a: 0.5019608}
+  m_Color: {r: 0.9137255, g: 0.79496217, b: 0, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5379,6 +5384,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 881854357035535712}
     m_Modifications:
+    - target: {fileID: 6211369728775897100, guid: 43d50e4d186e5480aa06b66d4c091bf1,
+        type: 3}
+      propertyPath: m_Name
+      value: PlayBlock
+      objectReference: {fileID: 0}
     - target: {fileID: 847181914446720555, guid: 43d50e4d186e5480aa06b66d4c091bf1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5434,19 +5444,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6211369728775897100, guid: 43d50e4d186e5480aa06b66d4c091bf1,
-        type: 3}
-      propertyPath: m_Name
-      value: PlayBlock
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43d50e4d186e5480aa06b66d4c091bf1, type: 3}
---- !u!4 &1554586294672578270 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 847181914446720555, guid: 43d50e4d186e5480aa06b66d4c091bf1,
-    type: 3}
-  m_PrefabInstance: {fileID: 2185148011315542261}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &6162857579334045254 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5464531940706793139, guid: 43d50e4d186e5480aa06b66d4c091bf1,
@@ -5459,3 +5458,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 217a09ecd607a0841a76acc06f50d267, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &1554586294672578270 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 847181914446720555, guid: 43d50e4d186e5480aa06b66d4c091bf1,
+    type: 3}
+  m_PrefabInstance: {fileID: 2185148011315542261}
+  m_PrefabAsset: {fileID: 0}

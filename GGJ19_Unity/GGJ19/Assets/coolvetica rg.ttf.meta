@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0f779bc85280d4367a62f87fdb06d33a
+guid: c225cfee3ac3640bcafcf747087db0ed
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,9 +8,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Major Mono Display
+  fontName: Coolvetica
   fontNames:
-  - Major Mono Display
+  - Coolvetica
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
