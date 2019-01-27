@@ -508,7 +508,7 @@ public class GameManager : Singleton<GameManager>
             if(tile.gProp != null) GameObject.Destroy(tile.gProp);
             GameObject block = GameObject.Instantiate(tileDatabase.prefabWallBlock, boardContainer);
             block.name = "Tile_X" + x + "Y" + y + "Block";
-            block.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight + 0.5f, y + 0.5f);
+            block.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight + 0.25f, y + 0.5f);
             tile.gProp = block;
         }
 
