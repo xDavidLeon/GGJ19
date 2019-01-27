@@ -1,7 +1,7 @@
-﻿using Rewired;
+﻿using DG.Tweening;
+using Rewired;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
@@ -91,7 +91,7 @@ public class GameManager : Singleton<GameManager>
         canvasGroupPlayerSelection.alpha = 0.0f;
         canvasGroupGame.alpha = 0.0f;
         canvasGroupIntro.alpha = 1.0f;
-        if (canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
+        if(canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
     }
 
     void Start()
@@ -153,7 +153,7 @@ public class GameManager : Singleton<GameManager>
                 break;
             case GAME_STATE.GAME:
                 if(canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
-                if (prevState == GAME_STATE.GAME_OVER)
+                if(prevState == GAME_STATE.GAME_OVER)
                     if(canvasGroupGameOver != null) canvasGroupGameOver.DOFade(0.0f, 0.5f);
                 InitGame();
                 break;
@@ -169,7 +169,7 @@ public class GameManager : Singleton<GameManager>
         switch(gameState)
         {
             case GAME_STATE.INTRO:
-                if(Time.time - introStartTime > introDuration / 2.0f) SetGameState(GAME_STATE.TUTORIAL);
+                if(Time.time - introStartTime > introDuration / 3.0f) SetGameState(GAME_STATE.TUTORIAL);
                 break;
             case GAME_STATE.TUTORIAL:
                 if(Time.time - introStartTime > introDuration) SetGameState(GAME_STATE.PLAYER_SELECTION);
@@ -218,6 +218,11 @@ public class GameManager : Singleton<GameManager>
         }
 
         Player rewiredPlayer = ReInput.players.GetPlayer(rewiredPlayerId);
+        for(int i = 0; i < players.Count; i++)
+        {
+            if(players[i].initialized && players[i].playerInput == rewiredPlayer) return;
+        }
+
         players[activePlayers].Init(rewiredPlayerId, rewiredPlayer);
 
         // Disable the Assignment map category in Player so no more JoinGame Actions return
@@ -405,7 +410,7 @@ public class GameManager : Singleton<GameManager>
         if(skip)
         {
             CurrentPlayer.skippedTurns++;
-            if (CurrentPlayer.skippedTurns >= 2)
+            if(CurrentPlayer.skippedTurns >= 2)
             {
                 CurrentPlayer.isPlaying = false;
             }
@@ -422,7 +427,7 @@ public class GameManager : Singleton<GameManager>
             if(pl.skippedTurns > 0) skippedTurns++;
         }
 
-        if (skippedTurns >= activePlayers)
+        if(skippedTurns >= activePlayers)
         {
             SetGameState(GAME_STATE.GAME_OVER);
             return;
@@ -442,7 +447,7 @@ public class GameManager : Singleton<GameManager>
     void NextPlayer()
     {
         int nextPlayer = (currentPlayerId + 1) % activePlayers;
-        while (players[nextPlayer].isPlaying == false)
+        while(players[nextPlayer].isPlaying == false)
             nextPlayer = (nextPlayer + 1) % activePlayers;
 
         currentPlayerId = nextPlayer;
@@ -498,6 +503,15 @@ public class GameManager : Singleton<GameManager>
 
         tile.gFloor = g;
 
+        if(tile.data.roomType == Board.ROOM_TYPE.WALL)
+        {
+            if(tile.gProp != null) GameObject.Destroy(tile.gProp);
+            GameObject block = GameObject.Instantiate(tileDatabase.prefabWallBlock, boardContainer);
+            block.name = "Tile_X" + x + "Y" + y + "Block";
+            block.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight + 0.5f, y + 0.5f);
+            tile.gProp = block;
+        }
+
         return g;
     }
 
@@ -551,7 +565,10 @@ public class GameManager : Singleton<GameManager>
         bool isTargetRoom = targetTile != null && targetTile.data.roomType != Board.ROOM_TYPE.WALL && targetTile.data.roomType != Board.ROOM_TYPE.EMPTY;
         if(!isTargetRoom)
         {
-            PlaceWallProp(tile, direction, tileDatabase.RandomWallProp(tile.data.roomType), true);
+            if(x % 2 == 0 && y % 2 == 0)
+                PlaceWallProp(tile, direction, tileDatabase.prefabLight, true);
+            else
+                PlaceWallProp(tile, direction, tileDatabase.RandomWallProp(tile.data.roomType), true);
             if(placeBotWalls == false && direction == Constants.Direction.Bot)
             {
                 return null;
