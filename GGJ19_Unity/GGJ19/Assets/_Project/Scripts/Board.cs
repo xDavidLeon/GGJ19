@@ -91,8 +91,23 @@ public class Board : ScriptableObject
 
     Vector2[] offsets;
 
+    public void ClearBoard()
+    {
+        if(tiles == null) return;
+        for(int i = 0; i < boardWidth; i++)
+            for(int j = 0; j < boardHeight; j++)
+            {
+                Tile tile = GetTile(i, j);
+                if(tile == null) continue;
+                tile.Clear();
+                tile.ClearVisuals();
+            }
+    }
+
     public void InitBoard(int width = 20, int height = 20)
     {
+        ClearBoard();
+
         boardWidth = width;
         boardHeight = height;
 
@@ -174,6 +189,7 @@ public class Board : ScriptableObject
 
     public Tile GetTile(int x, int y)
     {
+        if(tiles == null) return null;
         if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight)
             return null;
         return tiles[x, y];

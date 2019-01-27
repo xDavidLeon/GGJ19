@@ -1,18 +1,20 @@
-﻿using Rewired;
+﻿using DG.Tweening;
+using Rewired;
 using UnityEngine;
-using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
     public int playerId = -1;
     public bool initialized = false;
     public Color playerColor = Color.white;
+    public int skippedTurns = 0;
+    public bool isPlaying = false;
 
     [Header("UI")]
     public int score = 0;
     public TMPro.TextMeshProUGUI textScore;
     public CanvasGroup uiCanvasGroup;
-    public UnityEngine.UI.Image imgPrompt; 
+    public UnityEngine.UI.Image imgPrompt;
 
     [Header("Input")]
     public float moveSpeed = 15.0f;
@@ -97,6 +99,7 @@ public class PlayerController : MonoBehaviour
     public void Init(int id, Rewired.Player rewiredPlayer)
     {
         playerId = id;
+        isPlaying = true;
         playerInput = rewiredPlayer;
         initialized = true;
         playBlock.gameObject.SetActive(true);
@@ -104,6 +107,12 @@ public class PlayerController : MonoBehaviour
         posZ = 10;
 
         NewBlock();
+    }
+
+    public void Reset()
+    {
+        skippedTurns = 0;
+        isPlaying = true;
     }
 
     public void UpdatePlayerInput()
@@ -151,16 +160,30 @@ public class PlayerController : MonoBehaviour
         Vector3 placement = new Vector3(placementX, GameManager.Instance.tileDatabase.boardHeight, placementZ);
         Debug.DrawLine(placement, placement + Vector3.up * 10.0f, Color.blue);
 
-        if(GameManager.Instance.gameState != GameManager.GAME_STATE.GAME) return;
+        if(GameManager.Instance.gameState != GameManager.GAME_STATE.GAME)
+        {
+            playBlock.gameObject.SetActive(false);
+            return;
+        }
 
         // Move the playBlock to the target position
         if(MyTurn)
         {
+            playBlock.gameObject.SetActive(true);
+
             if(playerInput.GetButtonDown("Select") || Input.GetKeyDown(KeyCode.Y))
             {
                 if(GameManager.Instance.PlacePlayBlock(playBlock, Input.GetKeyDown(KeyCode.Y)))
                     GameManager.Instance.NextTurn();
             }
+            else if(playerInput.GetButtonDown("Skip"))
+            {
+                GameManager.Instance.NextTurn(true);
+            }
+        }
+        else
+        {
+            playBlock.gameObject.SetActive(false);
         }
 
     }
