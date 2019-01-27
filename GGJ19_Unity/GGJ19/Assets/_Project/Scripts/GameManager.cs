@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -86,13 +87,14 @@ public class GameManager : Singleton<GameManager>
 
         canvasGroupPlayerSelection.alpha = 0.0f;
         canvasGroupGame.alpha = 0.0f;
-        canvasGroupIntro.alpha = 0.0f;
+        canvasGroupIntro.alpha = 1.0f;
         if (canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
     }
 
     void Start()
     {
         SetGameState(GAME_STATE.INTRO);
+        SceneManager.LoadScene("ArtScene", LoadSceneMode.Additive);
     }
 
     public void InitGame()
@@ -131,7 +133,7 @@ public class GameManager : Singleton<GameManager>
         {
             case GAME_STATE.INTRO:
                 introStartTime = Time.time;
-                canvasGroupIntro.DOFade(1.0f, 0.5f);
+                //canvasGroupIntro.DOFade(1.0f, 0.5f);
                 break;
             case GAME_STATE.PLAYER_SELECTION:
                 canvasGroupIntro.DOFade(0.0f, 0.5f);
