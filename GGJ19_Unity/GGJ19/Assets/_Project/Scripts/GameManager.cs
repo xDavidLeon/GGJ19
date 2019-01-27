@@ -109,9 +109,15 @@ public class GameManager : Singleton<GameManager>
         boardGuide.transform.localScale = new Vector3(boardWidth, 1.0f, boardHeight);
         boardGuide.transform.localPosition = new Vector3(boardWidth / 2.0f, -0.475f, boardHeight / 2.0f);
         for(int i = 0; i < activePlayers; ++i)
+        {
+            PlayerController player = players[i];
+            player.Reset();
+        }
+
+        for(int i = 0; i < activePlayers; ++i)
             SetPlayerStartTiles(i);
 
-        board.SetLevel(level);
+        board.SetLevel(Random.Range(0, 5));
 
         //obstacles
         UpdateBoardTileAssets();
@@ -382,8 +388,25 @@ public class GameManager : Singleton<GameManager>
             player.score = board.ComputePlayerScore(player.playerId);
         }
 
-        if(skip) skippedTurns++;
-        else skippedTurns = 0;
+        if(skip)
+        {
+            CurrentPlayer.skippedTurns++;
+            if (CurrentPlayer.skippedTurns >= 2)
+            {
+                CurrentPlayer.isPlaying = false;
+            }
+        }
+        else
+        {
+            CurrentPlayer.skippedTurns = 0;
+        }
+
+        skippedTurns = 0;
+        for(int i = 0; i < activePlayers; i++)
+        {
+            PlayerController pl = players[i];
+            if(pl.skippedTurns > 0) skippedTurns++;
+        }
 
         if (skippedTurns >= activePlayers)
         {
@@ -392,13 +415,24 @@ public class GameManager : Singleton<GameManager>
         }
 
         // Get new block
-        CurrentPlayer.NewBlock();
 
         UpdateBoardTileAssets();
 
-        currentPlayerId = (currentPlayerId + 1) % activePlayers;
-        if(currentPlayerId == 0) turn++;
+        NextPlayer();
+
+        CurrentPlayer.NewBlock();
+
         lastTimeTurnStarted = Time.time;
+    }
+
+    void NextPlayer()
+    {
+        int nextPlayer = (currentPlayerId + 1) % activePlayers;
+        while (players[nextPlayer].isPlaying == false)
+            nextPlayer = (nextPlayer + 1) % activePlayers;
+
+        currentPlayerId = nextPlayer;
+        if(currentPlayerId == 0) turn++;
     }
 
     #region VISUALS
