@@ -76,7 +76,7 @@ MonoBehaviour:
   tileScale: {x: 1, y: 0.1, z: 1}
   boardHeight: 0
   boardPropHeight: 0.05
-  boardPlayblockHeight: 0.4
+  boardPlayblockHeight: 0.3
   tileMaterials:
     reorderableList:
       canAdd: 1
