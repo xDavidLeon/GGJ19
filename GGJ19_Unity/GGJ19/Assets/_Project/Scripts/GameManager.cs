@@ -27,7 +27,7 @@ public class GameManager : Singleton<GameManager>
     public int turn = 0;
     public int last_block_id = 0;
     public bool force_corridors = true;
-    public bool force_connection = true;
+    public bool force_connectivity = true;
     public bool placeBotWalls = false;
 
     public PlayerController CurrentPlayer
@@ -135,6 +135,13 @@ public class GameManager : Singleton<GameManager>
                                 Debug.Log("wrong corridor connection");
                                 continue;
                             }
+
+                            if ( force_connectivity && !tile.data.connected && tile.data.roomType != Board.ROOM_TYPE.START )
+                            {
+                                Debug.Log("not connected");
+                                continue;
+                            }
+
                             touching_player = true;
                             break;
                         }
