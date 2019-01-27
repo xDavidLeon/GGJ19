@@ -53,11 +53,15 @@ public class GameManager : Singleton<GameManager>
 
     [Header("UI")]
     public CanvasGroup canvasGroupIntro;
+    public CanvasGroup canvasGroupTitle;
     public CanvasGroup canvasGroupPlayerSelection;
     public TMPro.TextMeshProUGUI txtPlayerSelectionCooldown;
     public CanvasGroup canvasGroupGame;
     public TMPro.TextMeshProUGUI txtPlayerTimerTitle;
     public UnityEngine.UI.Image txtPlayerTimerImage;
+
+    [Header("Audio")]
+    public AudioSource audioFall;
 
     public PlayerController CurrentPlayer
     {
@@ -331,6 +335,11 @@ public class GameManager : Singleton<GameManager>
                     }
                 }
             }
+
+        AudioSource audioData = GetComponent<AudioSource>();
+        if(audioData)
+            audioData.Play(0);
+
         return true;
     }
 
