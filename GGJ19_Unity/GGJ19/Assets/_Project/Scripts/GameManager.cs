@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
-    public enum GAME_MODE { 
+    public enum GAME_MODE
+    {
         CONQUEST = 1,
         HOME = 2
     };
@@ -26,6 +27,7 @@ public class GameManager : Singleton<GameManager>
     public int turn = 0;
     public int last_block_id = 0;
     public bool force_corridors = true;
+    public bool placeBotWalls = false;
 
     public PlayerController CurrentPlayer
     {
@@ -50,7 +52,7 @@ public class GameManager : Singleton<GameManager>
             SetPlayerStartTiles(i);
 
         //obstacles
-        board.GetTile( (int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.25f) ).data.roomType = Board.ROOM_TYPE.WALL;
+        board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
         board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
         board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
         board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
@@ -82,7 +84,7 @@ public class GameManager : Singleton<GameManager>
         pc.startX = start_x;
         pc.startY = start_y;
 
-        Board.Tile tile = board.GetTile( start_x, start_y );
+        Board.Tile tile = board.GetTile(start_x, start_y);
         tile.data.player = player_id;
         tile.data.roomType = Board.ROOM_TYPE.START;
     }
@@ -128,7 +130,7 @@ public class GameManager : Singleton<GameManager>
                         if(tile.data.player == currentPlayerId)
                         {
                             //if not touching a corridor
-                            if (force_corridors && tile.data.roomType != playBlock.roomType && (
+                            if(force_corridors && tile.data.roomType != playBlock.roomType && (
                                 (is_corridor && tile.data.roomType == Board.ROOM_TYPE.CORRIDOR) ||
                                 (!is_corridor && tile.data.roomType != Board.ROOM_TYPE.CORRIDOR)))
                             {
@@ -167,21 +169,21 @@ public class GameManager : Singleton<GameManager>
         for(int i = 0; i < 4; i++)
             for(int j = 0; j < 4; j++)
             {
-                if (playBlock.block.GetValue(i, j) == 0)
+                if(playBlock.block.GetValue(i, j) == 0)
                     continue;
-                
+
                 PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
 
                 //conquer neightbours
-                if (mode == GAME_MODE.CONQUEST)
+                if(mode == GAME_MODE.CONQUEST)
                 {
-                    for (int k = 0; k < 4; ++k)
+                    for(int k = 0; k < 4; ++k)
                     {
                         Vector2 offset = offsets[k];
                         Board.Tile next = board.GetTile(startX + i + (int)offset.x, startY + j + (int)offset.y);
-                        if (next == null)
+                        if(next == null)
                             continue;
-                        if (next.data.roomType != Board.ROOM_TYPE.WALL &&
+                        if(next.data.roomType != Board.ROOM_TYPE.WALL &&
                             next.data.roomType != Board.ROOM_TYPE.EMPTY &&
                             next.data.roomType != Board.ROOM_TYPE.START)
                         {
@@ -241,7 +243,7 @@ public class GameManager : Singleton<GameManager>
                 Board.Tile tile = board.tiles[i, j];
                 tile.ClearVisuals();
                 //if( tile.data.connected )
-                    PlaceTileGameObject(i, j, tile.data.roomType);
+                PlaceTileGameObject(i, j, tile.data.roomType);
                 PlaceWalls(tile);
             }
     }
@@ -272,7 +274,7 @@ public class GameManager : Singleton<GameManager>
         g.name = "Tile_X" + x + "Y" + y;
         g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
-        g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
+        g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight, y + 0.5f);
 
         board.tiles[x, y].gFloor = g;
 
@@ -283,37 +285,42 @@ public class GameManager : Singleton<GameManager>
     {
         if(tile.data.roomType == Board.ROOM_TYPE.EMPTY) return null;
         if(tile.data.roomType == Board.ROOM_TYPE.WALL) return null;
+        if(tile.data.roomType == Board.ROOM_TYPE.START) return null;
 
         // Out of bounds checks
-        if(direction == Constants.Direction.Left && tile.pos_x <= 0) return null;
-        else if(direction == Constants.Direction.Right && tile.pos_x >= boardWidth - 1) return null;
-        else if(direction == Constants.Direction.Bot && tile.pos_y <= 0.0f) return null;
-        else if(direction == Constants.Direction.Top && tile.pos_y >= boardHeight - 1) return null;
+        //if(direction == Constants.Direction.Left && tile.pos_x <= 0) return null;
+        //else if(direction == Constants.Direction.Right && tile.pos_x >= boardWidth - 1) return null;
+        //else if(direction == Constants.Direction.Bot && tile.pos_y <= 0.0f) return null;
+        //else if(direction == Constants.Direction.Top && tile.pos_y >= boardHeight - 1) return null;
 
         // Where will we store the gameObject?
         GameObject targetGO = null;
-        Board.Tile targetTile = tile;
+        Board.Tile targetTile = null;
         int x = tile.pos_x;
         int y = tile.pos_y;
 
         if(direction == Constants.Direction.Bot)
         {
-            targetTile = board.GetTile(x, y - 1);
+            if(y > 0)
+                targetTile = board.GetTile(x, y - 1);
             targetGO = tile.gWallBot;
         }
         else if(direction == Constants.Direction.Top)
         {
-            targetTile = board.GetTile(x, y + 1);
+            if(y < boardHeight - 1)
+                targetTile = board.GetTile(x, y + 1);
             targetGO = tile.gWallTop;
         }
         else if(direction == Constants.Direction.Left)
         {
-            targetTile = board.GetTile(x - 1, y);
+            if(x > 0)
+                targetTile = board.GetTile(x - 1, y);
             targetGO = tile.gWallLeft;
         }
         else if(direction == Constants.Direction.Right)
         {
-            targetTile = board.GetTile(x + 1, y);
+            if(x < boardWidth - 1)
+                targetTile = board.GetTile(x + 1, y);
             targetGO = tile.gWallRight;
         }
 
@@ -321,40 +328,66 @@ public class GameManager : Singleton<GameManager>
             GameObject.Destroy(targetGO);
 
         GameObject gPrefab = tileDatabase.prefabWall;
-        if(targetTile.data.roomType == Board.ROOM_TYPE.WALL || targetTile.data.roomType == Board.ROOM_TYPE.EMPTY || targetTile.data.player != tile.data.player) gPrefab = tileDatabase.prefabWall;
-        else if(targetTile.data.roomType != tile.data.roomType) gPrefab = tileDatabase.prefabDoor;
-        else return null;
+        bool isTargetRoom = targetTile != null && targetTile.data.roomType != Board.ROOM_TYPE.WALL && targetTile.data.roomType != Board.ROOM_TYPE.EMPTY;
+        if(!isTargetRoom)
+        {
+            PlaceWallProp(tile, direction, tileDatabase.RandomWallProp(tile.data.roomType), true);
+            if(placeBotWalls == false && direction == Constants.Direction.Bot)
+            {
+                return null;
+            }
+            return PlaceWallProp(tile, direction, tileDatabase.prefabWall);
+        }
+        else if(targetTile.data.player != tile.data.player) return PlaceWallProp(tile, direction, tileDatabase.prefabWall);
+        else if(targetTile.data.roomType != tile.data.roomType) return PlaceWallProp(tile, direction, tileDatabase.prefabDoor);
+
+
+        return null;
+    }
+
+    private GameObject PlaceWallProp(Board.Tile tile, Constants.Direction direction, GameObject gPrefab, bool isProp = false)
+    {
+        if(gPrefab == null) return null;
 
         GameObject g = CreateWallGameObject(tile.data.roomType, gPrefab);
         g.transform.parent = boardContainer;
+        if(isProp)
+        {
+            GameObject.Destroy(tile.gProp);
+            tile.gProp = g;
+        }
+
+        int x = tile.pos_x;
+        int y = tile.pos_y;
 
         if(direction == Constants.Direction.Bot)
         {
             g.name = "Tile_X" + x + "Y" + y + "WallBot-" + gPrefab.name;
-            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
-            tile.gWallBot = g;
+            g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardPropHeight, y + 0.5f);
+            if(!isProp) tile.gWallBot = g;
         }
         else if(direction == Constants.Direction.Top)
         {
             g.name = "Tile_X" + x + "Y" + y + "WallTop-" + gPrefab.name;
-            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y + 1.0f);
-            tile.gWallTop = g;
+            g.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardPropHeight, y + 0.5f);
+            if(!isProp) tile.gWallTop = g;
         }
         else if(direction == Constants.Direction.Left)
         {
             g.name = "Tile_X" + x + "Y" + y + "WallLeft-" + gPrefab.name;
-            g.transform.localRotation = Quaternion.Euler(0, -90, 0);
-            g.transform.localPosition = new Vector3(x, Constants.boardHeight, y);
-            tile.gWallLeft = g;
+            g.transform.localRotation = Quaternion.Euler(0, 90, 0);
+            g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardPropHeight, y + 0.5f);
+            if(!isProp) tile.gWallLeft = g;
         }
         else if(direction == Constants.Direction.Right)
         {
             g.name = "Tile_X" + x + "Y" + y + "WallRight-" + gPrefab.name;
             g.transform.localRotation = Quaternion.Euler(0, -90, 0);
-            g.transform.localPosition = new Vector3(x + 1.0f, Constants.boardHeight, y);
-            tile.gWallRight = g;
+            g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardPropHeight, y + 0.5f);
+            if(!isProp) tile.gWallRight = g;
         }
-
+        g.transform.parent = boardContainer;
         return g;
     }
 
@@ -365,17 +398,16 @@ public class GameManager : Singleton<GameManager>
     /// <returns></returns>
     public GameObject CreateTileGameObject(Board.ROOM_TYPE roomType)
     {
-        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
-        g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
+        GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, tileDatabase.boardHeight, 0), Quaternion.identity);
+        g.transform.localScale = tileDatabase.tileScale;
         g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
         return g;
     }
 
     public GameObject CreateWallGameObject(Board.ROOM_TYPE roomType, GameObject gPrefab)
     {
-        GameObject g = GameObject.Instantiate(gPrefab, new Vector3(0, Constants.boardHeight, 0), Quaternion.identity);
-        //g.transform.localScale = new Vector3(tileDatabase.tileScale, tileDatabase.tileScale, tileDatabase.tileScale);
-        g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
+        GameObject g = GameObject.Instantiate(gPrefab, new Vector3(0, tileDatabase.boardPropHeight, 0), Quaternion.identity);
+        //g.transform.localScale = tileDatabase.propScale;
         return g;
     }
 

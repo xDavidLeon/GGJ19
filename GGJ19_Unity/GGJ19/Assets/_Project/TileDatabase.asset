@@ -18,7 +18,65 @@ MonoBehaviour:
     type: 3}
   prefabDoor: {fileID: 9021573114647157446, guid: 0453b60db80815e46862fe00182e88ff,
     type: 3}
-  tileScale: 1
+  prefabWallProps:
+    reorderableList:
+      canAdd: 1
+      canRemove: 1
+      draggable: 1
+      expandable: 1
+      multipleSelection: 1
+      isExpanded: 0
+      label:
+        m_Text: Keys
+        m_Image: {fileID: 0}
+        m_Tooltip: 
+      headerHeight: 18
+      footerHeight: 13
+      slideEasing: 0.15
+      verticalSpacing: 2
+      showDefaultBackground: 1
+      elementDisplayType: 0
+      elementNameProperty: 
+      elementNameOverride: 
+      elementIcon: {fileID: 0}
+    reqReferences: {fileID: 0}
+    isExpanded: 0
+    _keyValues: 0100000000000000020000000300000004000000050000000600000007000000
+    _keys: 0100000000000000020000000300000004000000050000000600000007000000
+    _values:
+    - chance: 100
+      prefabs: []
+    - chance: 100
+      prefabs: []
+    - chance: 100
+      prefabs: []
+    - chance: 100
+      prefabs:
+      - {fileID: 1556980696827776153, guid: 233a5c7326db21d4195c1b973d8bc354, type: 3}
+      - {fileID: 742856875769946302, guid: 8b34600ee4152f94b9704325d166e995, type: 3}
+      - {fileID: 4422091857741169564, guid: f399bfabbb266c84eab00ef3bc588826, type: 3}
+      - {fileID: 2480237185175147133, guid: 7c4fa2571c23f5d4bab4e89236d06fae, type: 3}
+    - chance: 50
+      prefabs:
+      - {fileID: 8661024821355653383, guid: 1e16643bb505e054190ce60e175e224f, type: 3}
+      - {fileID: 1237254213210443316, guid: a57fb186901ecb64da5dc2cff14cce17, type: 3}
+    - chance: 100
+      prefabs:
+      - {fileID: 8661024821355653383, guid: 1e16643bb505e054190ce60e175e224f, type: 3}
+    - chance: 100
+      prefabs:
+      - {fileID: 6784998780864457223, guid: 15483e12c908a6a4f9f3aa04e4c99e03, type: 3}
+    - chance: 100
+      prefabs:
+      - {fileID: 8661024821355653383, guid: 1e16643bb505e054190ce60e175e224f, type: 3}
+      - {fileID: 4589579769593473397, guid: d170bf4d620a43d4fb4eb00bb480a9cf, type: 3}
+      - {fileID: 3659352502350543652, guid: 7d76354d4a5e33b45803df2e7e146433, type: 3}
+      - {fileID: 7942747620816440263, guid: 5cd95a769cbcbaa4c9ae9c46f009c465, type: 3}
+      - {fileID: 8423786542595459071, guid: 36bdcb027f313134b9924f77b2b0c834, type: 3}
+  tileScale: {x: 1, y: 0.1, z: 1}
+  boardHeight: 0
+  boardPropHeight: 0.05
+  boardPlayblockHeight: 0.4
   tileMaterials:
     reorderableList:
       canAdd: 1
