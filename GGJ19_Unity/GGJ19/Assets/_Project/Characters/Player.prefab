@@ -5224,8 +5224,13 @@ MonoBehaviour:
   textScore: {fileID: 4313696141795952626}
   uiCanvasGroup: {fileID: 2768408004241901684}
   moveSpeed: 15
-  offsetX: -2.5
-  offsetY: -2.5
+  offsetX: -2
+  offsetY: -2
+  raycastLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  startX: -1
+  startY: -1
   pointer: {fileID: 7776593539346186967}
   playBlock: {fileID: 6162857579334045254}
 --- !u!1 &5484495803437851566
@@ -5380,6 +5385,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 881854357035535712}
     m_Modifications:
+    - target: {fileID: 6211369728775897100, guid: 43d50e4d186e5480aa06b66d4c091bf1,
+        type: 3}
+      propertyPath: m_Name
+      value: PlayBlock
+      objectReference: {fileID: 0}
     - target: {fileID: 847181914446720555, guid: 43d50e4d186e5480aa06b66d4c091bf1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5434,11 +5444,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6211369728775897100, guid: 43d50e4d186e5480aa06b66d4c091bf1,
-        type: 3}
-      propertyPath: m_Name
-      value: PlayBlock
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43d50e4d186e5480aa06b66d4c091bf1, type: 3}

@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 15.0f;
     public float offsetX = -2.5f;
     public float offsetY = -2.5f;
+    public LayerMask raycastLayer;
 
     private float posX = 0;
     private float posZ = 0;
@@ -51,6 +52,12 @@ public class PlayerController : MonoBehaviour
     {
         playerInput = ReInput.players.GetPlayer(playerId);
 
+        if(GameManager.Instance.numPlayers <= playerId)
+        {
+            GameManager.Instance.players[playerId].uiCanvasGroup.alpha = 0.0f;
+            return;
+        }
+
         NewBlock();
 
         /*
@@ -63,6 +70,8 @@ public class PlayerController : MonoBehaviour
     {
         if (!cam)
             return;
+
+        if(GameManager.Instance.numPlayers <= playerId) return;
 
         UpdatePlayerInput();
 
@@ -82,16 +91,16 @@ public class PlayerController : MonoBehaviour
         if (controller.type == ControllerType.Mouse)
         {
             Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
-            if(Physics.Raycast(ray, out hit, 100))
+            if(Physics.Raycast(ray, out hit, 100, raycastLayer))
             {
                 Vector3 hitPoint = hit.point;
                 Debug.DrawRay(ray.origin, hitPoint - ray.origin, Color.green);
 
-                posX = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f + offsetX;
-                posZ = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f + offsetY;
+                posX = Mathf.Clamp(Mathf.Round(hitPoint.x - 0.5f), 0.0f, GameManager.Instance.boardWidth - 1) + 0.5f;
+                posZ = Mathf.Clamp(Mathf.Round(hitPoint.z - 0.5f), 0.0f, GameManager.Instance.boardHeight - 1) + 0.5f;
 
-                placementX = posX;
-                placementZ = posZ;
+                placementX = posX + offsetX;
+                placementZ = posZ + offsetY;
             }
             else
                 Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
@@ -112,16 +121,14 @@ public class PlayerController : MonoBehaviour
 
         pointer.position = Vector3.Lerp(pointer.position, new Vector3(placementX + 2, GameManager.Instance.tileDatabase.boardPlayblockHeight + 0.5f, placementZ + 2), Time.deltaTime * 4);
         playBlock.transform.position = new Vector3(placementX, GameManager.Instance.tileDatabase.boardPlayblockHeight, placementZ);
+        Vector3 placement = new Vector3(placementX, GameManager.Instance.tileDatabase.boardHeight, placementZ);
+        Debug.DrawLine(placement, placement + Vector3.up * 10.0f, Color.blue);
 
         // Move the playBlock to the target position
         if(MyTurn)
         {
             if(playerInput.GetButtonDown("Select"))
             {
-                Vector3 placementPosition = new Vector3(placementX, GameManager.Instance.tileDatabase.boardPlayblockHeight, placementZ);
-                playBlock.transform.position = placementPosition;
-
-                Debug.DrawLine(placementPosition, placementPosition + Vector3.up, Color.blue);
 
                 if(GameManager.Instance.PlacePlayBlock(playBlock)) GameManager.Instance.NextTurn();
             }
