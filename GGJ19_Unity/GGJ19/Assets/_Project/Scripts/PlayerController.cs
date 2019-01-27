@@ -87,7 +87,8 @@ public class PlayerController : MonoBehaviour
         placementZ = posZ;
 
         Controller controller = playerInput.controllers.GetLastActiveController();
-        if(controller == null) return;
+        if(controller == null)
+            return;
         if (controller.type == ControllerType.Mouse)
         {
             Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
@@ -127,10 +128,10 @@ public class PlayerController : MonoBehaviour
         // Move the playBlock to the target position
         if(MyTurn)
         {
-            if(playerInput.GetButtonDown("Select"))
+            if(playerInput.GetButtonDown("Select") || Input.GetKeyDown(KeyCode.Y) )
             {
-
-                if(GameManager.Instance.PlacePlayBlock(playBlock)) GameManager.Instance.NextTurn();
+                if(GameManager.Instance.PlacePlayBlock(playBlock, Input.GetKeyDown(KeyCode.Y)) ) 
+                    GameManager.Instance.NextTurn();
             }
         }
 

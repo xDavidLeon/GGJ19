@@ -24,11 +24,13 @@ public class Board : ScriptableObject
         public ROOM_TYPE roomType;
         public int player;
         public bool connected;
+        public bool interior;
 
         public TileData()
         {
             player = -1;
             connected = false;
+            interior = false;
             roomType = ROOM_TYPE.EMPTY;
         }
     }
@@ -59,6 +61,14 @@ public class Board : ScriptableObject
             //GameObject.Destroy( this.gObject );
             //GameObject.Destroy( this.gTopWallObject );
             //GameObject.Destroy( this.gLeftWallObject );
+        }
+
+        public bool SameRoom( Tile a )
+        {
+            if (data.roomType == a.data.roomType &&
+                data.player == a.data.player)
+                return true;
+            return false;
         }
 
         public void ClearVisuals()
@@ -110,6 +120,27 @@ public class Board : ScriptableObject
             }
 
         initialized = true;
+    }
+
+    public void SetLevel(int level)
+    {
+        if (level == 1)
+        {
+            GetTile((int)(boardWidth * 0.25f), (int)(boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
+            GetTile((int)(boardWidth * 0.25f), (int)(boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
+            GetTile((int)(boardWidth * 0.75f), (int)(boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
+            GetTile((int)(boardWidth * 0.75f), (int)(boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
+        }
+        else if(level == 2)
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                int x = Random.Range(3, boardWidth - 3);
+                int y = Random.Range(3, boardWidth - 3);
+                GetTile(x,y).data.roomType = Board.ROOM_TYPE.WALL;
+            }
+        }
+
     }
 
     public Tile GetTile(int x, int y)
@@ -168,7 +199,6 @@ public class Board : ScriptableObject
 
         //compute connectivity
         Tile start = GetTile(pc.startX, pc.startY);
-        start.data.connected = true;
 
         List<Tile> pending = new List<Tile>();
         pending.Add(start);
@@ -178,33 +208,40 @@ public class Board : ScriptableObject
             Tile current = pending[pending.Count - 1];
             pending.RemoveAt(pending.Count - 1);
 
-            if (current.data.player != player_id || 
-                current.data.roomType < ROOM_TYPE.KITCHEN || 
-                current.data.connected )
+            if (current.data.player != player_id)
+                continue;
+
+            if(current.data.roomType == ROOM_TYPE.EMPTY ||
+                current.data.roomType == ROOM_TYPE.WALL )
+                continue;
+
+            if (current.data.roomType != ROOM_TYPE.START &&
+                current.data.connected)
                 continue;
 
             current.data.connected = true;
+            current.data.interior = false;
 
-            if (current.pos_x > 1)
-                pending.Add(GetTile(current.pos_x - 1, current.pos_y));
-            if (current.pos_x < boardWidth - 1)
-                pending.Add(GetTile(current.pos_x + 1, current.pos_y));
-            if (current.pos_y > 1)
-                pending.Add(GetTile(current.pos_x, current.pos_y - 1));
-            if (current.pos_y < boardHeight - 1)
-                pending.Add(GetTile(current.pos_x, current.pos_y + 1));
-        }
-
-        //visualize
-        /*
-        for (int i = 0; i < boardWidth; i++)
-            for (int j = 0; j < boardHeight; j++)
+            int valid_neightbours = 0;
+            for (int k = 0; k < 4; ++k)
             {
-                Tile tile = GetTile(i, j);
-                if (tile.data.player != player_id)
+                Vector2 offset = offsets[k];
+                int x2 = current.pos_x + (int)offset.x;
+                int y2 = current.pos_y + (int)offset.y;
+
+                if (x2 < 1 || x2 >= boardWidth - 1 || y2 < 1 || y2 >= boardHeight - 1)
                     continue;
-            }                   
-        */
+                Tile neighbour = GetTile(x2, y2);
+                if (neighbour.SameRoom(current))
+                {
+                    valid_neightbours++;
+                }
+                pending.Add(neighbour);
+            }
+
+            if (valid_neightbours == 4)
+                current.data.interior = true;
+        }
     }
 
     public int ComputePlayerScore( int player_id )
@@ -240,13 +277,10 @@ public class Board : ScriptableObject
 
                 int num_tiles = 1; //num tiles per room
                 int num_blocks = 1; //num blocks per room
+                int num_internal_tiles = 0; //num tiles surrounded
 
-                tile.room_id = room_id;
                 pending.Clear();
-                pending.Add(GetTile(i - 1, j));
-                pending.Add(GetTile(i + 1, j));
-                pending.Add(GetTile(i, j - 1));
-                pending.Add(GetTile(i, j + 1));
+                pending.Add(tile);
 
                 //compute sector size
                 while( pending.Count > 0 )
@@ -262,6 +296,7 @@ public class Board : ScriptableObject
                         continue;
 
                     current.room_id = room_id;
+                    current.data.interior = false;
 
                     //sector_size
                     num_tiles++;
@@ -273,23 +308,37 @@ public class Board : ScriptableObject
 
                     if (num_tiles > 1024)
                     {
-                        Debug.Log("ERROR IN SCORE");
+                        Debug.Log("INFINITE ERROR IN SCORE");
                         return -1;
                     }
 
-                    if ( current.pos_x > 1)
-                        pending.Add(GetTile(current.pos_x - 1, current.pos_y));
-                    if (current.pos_x < boardWidth - 1)
-                        pending.Add(GetTile(current.pos_x + 1, current.pos_y));
-                    if (current.pos_y > 1)
-                        pending.Add(GetTile(current.pos_x, current.pos_y - 1));
-                    if (current.pos_y < boardHeight - 1)
-                        pending.Add(GetTile(current.pos_x, current.pos_y + 1));
+                    int valid_neightbours = 0;
+                    for (int k = 0; k < 4; ++k)
+                    {
+                        Vector2 offset = offsets[k];
+                        int x2 = current.pos_x + (int)offset.x;
+                        int y2 = current.pos_y + (int)offset.y;
+
+                        if (x2 < 1 || x2 >= boardWidth - 1 || y2 < 1 || y2 >= boardHeight - 1)
+                            continue;
+                        Tile neighbour = GetTile(x2,y2);
+                        if( neighbour.SameRoom(current))
+                        {
+                            valid_neightbours++;
+                            pending.Add( neighbour );
+                        }
+                    }
+
+                    if (valid_neightbours == 4)
+                    {
+                        num_internal_tiles++;
+                        current.data.interior = true;
+                    }
                 }
 
                 //room score found
                 //score += num_tiles * num_blocks;
-                score += num_tiles;
+                score += num_internal_tiles;
                 room_id++;
             }
 

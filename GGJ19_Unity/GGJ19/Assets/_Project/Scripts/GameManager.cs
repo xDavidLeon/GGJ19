@@ -27,6 +27,7 @@ public class GameManager : Singleton<GameManager>
     public int turn = 0;
     public int last_block_id = 0;
     public bool force_corridors = true;
+    public bool force_connection = true;
     public bool placeBotWalls = false;
 
     public PlayerController CurrentPlayer
@@ -52,10 +53,7 @@ public class GameManager : Singleton<GameManager>
             SetPlayerStartTiles(i);
 
         //obstacles
-        board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
-        board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
-        board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
-        board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
+        board.SetLevel(2);
 
         UpdateBoardTileAssets();
     }
@@ -158,9 +156,9 @@ public class GameManager : Singleton<GameManager>
     /// </summary>
     /// <returns><c>true</c>, if play block was placed, <c>false</c> otherwise.</returns>
     /// <param name="playBlock">Play block.</param>
-    public bool PlacePlayBlock(PlayBlock playBlock)
+    public bool PlacePlayBlock(PlayBlock playBlock, bool erase = false)
     {
-        if(CheckPlacePlayBlock(playBlock) == false)
+        if(CheckPlacePlayBlock(playBlock) == false && !erase)
             return false;
 
         int block_id = last_block_id++;
@@ -172,10 +170,14 @@ public class GameManager : Singleton<GameManager>
                 if(playBlock.block.GetValue(i, j) == 0)
                     continue;
 
-                PlaceTile(startX + i, startY + j, playBlock.roomType, currentPlayerId, block_id);
+                Board.ROOM_TYPE type = playBlock.roomType;
+                if (erase)
+                    type = Board.ROOM_TYPE.EMPTY;
+
+                PlaceTile(startX + i, startY + j, type, currentPlayerId, block_id);
 
                 //conquer neightbours
-                if(mode == GAME_MODE.CONQUEST)
+                if(mode == GAME_MODE.CONQUEST && !erase)
                 {
                     for(int k = 0; k < 4; ++k)
                     {
@@ -188,7 +190,7 @@ public class GameManager : Singleton<GameManager>
                             next.data.roomType != Board.ROOM_TYPE.START)
                         {
                             next.data.player = currentPlayerId;
-                            next.data.roomType = playBlock.roomType;
+                            next.data.roomType = type;
                         }
                     }
                 }
@@ -204,20 +206,23 @@ public class GameManager : Singleton<GameManager>
     /// <param name="tileState"></param>
     public void PlaceTile(int x, int y, Board.ROOM_TYPE roomState, int player_id, int block_id)
     {
-        Board.Tile t = board.GetTile(x, y);
-        t.data.roomType = roomState;
-        t.data.player = player_id;
-        t.block_id = block_id;
-        PlaceTileGameObject(x, y, roomState);
+        Board.Tile tile = board.GetTile(x, y);
+        tile.data.roomType = roomState;
+        tile.data.player = player_id;
+        tile.block_id = block_id;
+        PlaceTileGameObject(tile);
     }
 
     public void NextTurn()
     {
         //mark tiles not connected
-        if(mode == GAME_MODE.CONQUEST)
-            board.ComputeConnectivity(CurrentPlayer.playerId);
-
-        CurrentPlayer.score = board.ComputePlayerScore(CurrentPlayer.playerId);
+        for(int i = 0; i < numPlayers; ++i)
+        {
+            PlayerController player = players[i];
+            if (mode == GAME_MODE.CONQUEST)
+                board.ComputeConnectivity(player.playerId);
+            player.score = board.ComputePlayerScore(player.playerId);
+        }
 
         // Get new block
         CurrentPlayer.NewBlock();
@@ -243,7 +248,7 @@ public class GameManager : Singleton<GameManager>
                 Board.Tile tile = board.tiles[i, j];
                 tile.ClearVisuals();
                 //if( tile.data.connected )
-                PlaceTileGameObject(i, j, tile.data.roomType);
+                PlaceTileGameObject(tile);
                 PlaceWalls(tile);
             }
     }
@@ -260,23 +265,22 @@ public class GameManager : Singleton<GameManager>
     /// Sets the visual representation of the Tile according to the roomType
     /// Called by InitBoard and PlaceTile.
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="roomType"></param>
-    public GameObject PlaceTileGameObject(int x, int y, Board.ROOM_TYPE roomType)
+    /// <param name="tile"></param>
+    public GameObject PlaceTileGameObject(Board.Tile tile)
     {
-        Board.Tile tile = board.tiles[x, y];
+        int x = tile.pos_x;
+        int y = tile.pos_y;
 
-        if(board.tiles[x, y].gFloor != null)
-            GameObject.Destroy(board.tiles[x, y].gFloor);
+        if (tile.gFloor != null)
+            GameObject.Destroy(tile.gFloor);
 
-        GameObject g = CreateTileGameObject(roomType);
+        GameObject g = CreateTileGameObject( tile.data.roomType, tile.data.connected );
         g.name = "Tile_X" + x + "Y" + y;
-        g.SetActive(roomType != Board.ROOM_TYPE.EMPTY);
+        g.SetActive( tile.data.roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
         g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight, y + 0.5f);
 
-        board.tiles[x, y].gFloor = g;
+        tile.gFloor = g;
 
         return g;
     }
@@ -357,6 +361,9 @@ public class GameManager : Singleton<GameManager>
             tile.gProp = g;
         }
 
+        if (isProp && !tile.data.connected)
+            return null;
+
         int x = tile.pos_x;
         int y = tile.pos_y;
 
@@ -396,11 +403,16 @@ public class GameManager : Singleton<GameManager>
     /// </summary>
     /// <param name="roomType"></param>
     /// <returns></returns>
-    public GameObject CreateTileGameObject(Board.ROOM_TYPE roomType)
+    public GameObject CreateTileGameObject(Board.ROOM_TYPE room_type, bool connected = true)
     {
         GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, tileDatabase.boardHeight, 0), Quaternion.identity);
         g.transform.localScale = tileDatabase.tileScale;
-        g.GetComponent<MeshRenderer>().material = tileDatabase.tileMaterials[roomType];
+        Material mat;
+        if(connected)
+            mat = tileDatabase.tileMaterials[room_type];
+        else
+            mat = tileDatabase.tileMaterialsDisconnected[room_type];
+        g.GetComponent<MeshRenderer>().material = mat;
         return g;
     }
 

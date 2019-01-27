@@ -84,7 +84,7 @@ MonoBehaviour:
       draggable: 1
       expandable: 1
       multipleSelection: 1
-      isExpanded: 1
+      isExpanded: 0
       label:
         m_Text: Keys
         m_Image: {fileID: 0}
@@ -99,7 +99,7 @@ MonoBehaviour:
       elementNameOverride: 
       elementIcon: {fileID: 0}
     reqReferences: {fileID: 0}
-    isExpanded: 1
+    isExpanded: 0
     _keyValues: 0000000001000000020000000300000004000000050000000600000007000000
     _keys: 0000000001000000020000000300000004000000050000000600000007000000
     _values:
@@ -111,3 +111,37 @@ MonoBehaviour:
     - {fileID: 2100000, guid: cdc609f264f484ae4bdb02bc512cb480, type: 2}
     - {fileID: 2100000, guid: 6de5b767e7e8044aebbefed4f803ec98, type: 2}
     - {fileID: 2100000, guid: e3e103f8a57334835844007a3728e210, type: 2}
+  tileMaterialsDisconnected:
+    reorderableList:
+      canAdd: 1
+      canRemove: 1
+      draggable: 1
+      expandable: 1
+      multipleSelection: 1
+      isExpanded: 0
+      label:
+        m_Text: Keys
+        m_Image: {fileID: 0}
+        m_Tooltip: 
+      headerHeight: 18
+      footerHeight: 13
+      slideEasing: 0.15
+      verticalSpacing: 2
+      showDefaultBackground: 1
+      elementDisplayType: 0
+      elementNameProperty: 
+      elementNameOverride: 
+      elementIcon: {fileID: 0}
+    reqReferences: {fileID: 0}
+    isExpanded: 0
+    _keyValues: 0000000001000000020000000300000004000000050000000600000007000000
+    _keys: 0000000001000000020000000300000004000000050000000600000007000000
+    _values:
+    - {fileID: 2100000, guid: e03f25c6b8c2fdf4e8b658e65333e0d5, type: 2}
+    - {fileID: 2100000, guid: 14212d691c9f08943a34e25270459ed2, type: 2}
+    - {fileID: 2100000, guid: 80f7d639eda9e44f1934da39ebeaf31f, type: 2}
+    - {fileID: 2100000, guid: 91b5d097f983e4d14a84c7b1f24d3820, type: 2}
+    - {fileID: 2100000, guid: f9b17e2994b97490c86eaa079d9eeb14, type: 2}
+    - {fileID: 2100000, guid: f844a765313c74edda979f33cfe7f2e8, type: 2}
+    - {fileID: 2100000, guid: ac2c8f14836de4cdc9fe8479cb2a6ba3, type: 2}
+    - {fileID: 2100000, guid: cf860e6585ae648cf949d4f4b3ea2e04, type: 2}

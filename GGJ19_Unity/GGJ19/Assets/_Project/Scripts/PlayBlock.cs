@@ -33,7 +33,7 @@ public class PlayBlock : MonoBehaviour
             {
                 if (block.GetValue(i,j) == 0)
                     continue;
-                GameObject g = GameManager.Instance.CreateTileGameObject(roomType);
+                GameObject g = GameManager.Instance.CreateTileGameObject( roomType, true );
                 g.transform.SetParent(this.transform);
                 g.transform.localPosition = new Vector3(i, 0.0f, j);
             }

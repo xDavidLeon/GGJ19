@@ -26,6 +26,7 @@ public class TileDatabase : ScriptableObject
 
     [Header("Materials")]
     public TileMaterialDictionary tileMaterials;
+    public TileMaterialDictionary tileMaterialsDisconnected;
 
     public GameObject RandomWallProp(Board.ROOM_TYPE roomType)
     {
