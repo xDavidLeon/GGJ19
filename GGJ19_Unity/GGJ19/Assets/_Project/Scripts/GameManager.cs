@@ -169,7 +169,7 @@ public class GameManager : Singleton<GameManager>
         switch(gameState)
         {
             case GAME_STATE.INTRO:
-                if(Time.time - introStartTime > introDuration / 2.0f) SetGameState(GAME_STATE.TUTORIAL);
+                if(Time.time - introStartTime > introDuration / 3.0f) SetGameState(GAME_STATE.TUTORIAL);
                 break;
             case GAME_STATE.TUTORIAL:
                 if(Time.time - introStartTime > introDuration) SetGameState(GAME_STATE.PLAYER_SELECTION);
