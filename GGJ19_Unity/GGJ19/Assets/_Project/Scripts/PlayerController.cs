@@ -23,6 +23,9 @@ public class PlayerController : MonoBehaviour
     private float placementZ = 0;
     private Rewired.Player playerInput;
 
+    public int startX = -1;
+    public int startY = -1;
+
     [Header("Block Management")]
     public Transform pointer;
     public PlayBlock playBlock;

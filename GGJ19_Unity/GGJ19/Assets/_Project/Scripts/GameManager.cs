@@ -49,6 +49,7 @@ public class GameManager : Singleton<GameManager>
         for(int i = 0; i < numPlayers; ++i)
             SetPlayerStartTiles(i);
 
+        //obstacles
         board.GetTile( (int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.25f) ).data.roomType = Board.ROOM_TYPE.WALL;
         board.GetTile((int)(board.boardWidth * 0.25f), (int)(board.boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
         board.GetTile((int)(board.boardWidth * 0.75f), (int)(board.boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
@@ -67,6 +68,8 @@ public class GameManager : Singleton<GameManager>
         int start_x = 0;
         int start_y = 0;
 
+        PlayerController pc = players[player_id];
+
         if(player_id == 0 || player_id == 1)
             start_y = (int)(boardHeight * 0.5);
         if(player_id == 2 || player_id == 3)
@@ -75,6 +78,9 @@ public class GameManager : Singleton<GameManager>
             start_x = boardWidth - 1;
         if(player_id == 3)
             start_y = boardHeight - 1;
+
+        pc.startX = start_x;
+        pc.startY = start_y;
 
         Board.Tile tile = board.GetTile( start_x, start_y );
         tile.data.player = player_id;
@@ -205,6 +211,10 @@ public class GameManager : Singleton<GameManager>
 
     public void NextTurn()
     {
+        //mark tiles not connected
+        if(mode == GAME_MODE.CONQUEST)
+            board.ComputeConnectivity(CurrentPlayer.playerId);
+
         CurrentPlayer.score = board.ComputePlayerScore(CurrentPlayer.playerId);
 
         // Get new block
@@ -230,7 +240,8 @@ public class GameManager : Singleton<GameManager>
             {
                 Board.Tile tile = board.tiles[i, j];
                 tile.ClearVisuals();
-                PlaceTileGameObject(i, j, tile.data.roomType);
+                //if( tile.data.connected )
+                    PlaceTileGameObject(i, j, tile.data.roomType);
                 PlaceWalls(tile);
             }
     }

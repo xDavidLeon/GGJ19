@@ -35,3 +35,4 @@ sysinfo.txt
 *.apk
 *.unitypackage
 GGJ19_Unity/.DS_Store
+.DS_Store
