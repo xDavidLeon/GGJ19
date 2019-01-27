@@ -21,6 +21,7 @@ public class GameManager : Singleton<GameManager>
     public List<PlayerController> players;
 
     public int numPlayers = 2;
+    public int level = 3;
     public int currentPlayerId = 0;
     Vector2[] offsets;
 
@@ -53,7 +54,7 @@ public class GameManager : Singleton<GameManager>
             SetPlayerStartTiles(i);
 
         //obstacles
-        board.SetLevel(2);
+        board.SetLevel( level );
 
         UpdateBoardTileAssets();
     }

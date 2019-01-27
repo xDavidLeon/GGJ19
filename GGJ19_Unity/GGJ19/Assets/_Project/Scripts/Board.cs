@@ -131,12 +131,41 @@ public class Board : ScriptableObject
             GetTile((int)(boardWidth * 0.75f), (int)(boardHeight * 0.25f)).data.roomType = Board.ROOM_TYPE.WALL;
             GetTile((int)(boardWidth * 0.75f), (int)(boardHeight * 0.75f)).data.roomType = Board.ROOM_TYPE.WALL;
         }
-        else if(level == 2)
+        else if (level == 2)
         {
-            for (int i = 0; i < 10; ++i)
+            for (int i = (int)(boardWidth*0.5f) - 2; i <= (int)(boardWidth * 0.5f) + 2; ++i)
+                for (int j = (int)(boardHeight * 0.5f) - 2; j <= (int)(boardHeight * 0.5f) + 2; ++j)
+                {
+                    GetTile(i, j).data.roomType = Board.ROOM_TYPE.WALL;
+                }
+        }
+        else if (level == 3)
+        {
+            int startx = (int)Mathf.Floor(boardWidth * 0.25f);
+            int endx = (int)Mathf.Ceil(boardWidth * 0.7f);
+            int starty = (int)Mathf.Floor(boardHeight * 0.25f);
+            int endy = (int)Mathf.Ceil(boardHeight * 0.7f);
+            for (int i = startx; i <= endx; ++i)
+            {
+                if (i == (int)Mathf.Floor(boardWidth * 0.49f) || i == (int)Mathf.Floor(boardWidth * 0.51f))
+                    continue;
+                GetTile(i, starty).data.roomType = Board.ROOM_TYPE.WALL;
+                GetTile(i, endy).data.roomType = Board.ROOM_TYPE.WALL;
+            }
+            for (int j = starty; j <= endy; ++j)
+            {
+                //if (j == (int)Mathf.Floor(boardHeight * 0.49f) || j == (int)Mathf.Floor(boardHeight * 0.51f))
+                //    continue;
+                GetTile(startx, j).data.roomType = Board.ROOM_TYPE.WALL;
+                GetTile(endx, j).data.roomType = Board.ROOM_TYPE.WALL;
+            }
+        }
+        else if (level == 4)
+        {
+            for (int i = 0; i < boardWidth; ++i)
             {
                 int x = Random.Range(3, boardWidth - 3);
-                int y = Random.Range(3, boardWidth - 3);
+                int y = Random.Range(3, boardHeight - 3);
                 GetTile(x,y).data.roomType = Board.ROOM_TYPE.WALL;
             }
         }
