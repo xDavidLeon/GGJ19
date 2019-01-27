@@ -320,9 +320,11 @@ public class Board : ScriptableObject
                 if (tile.data.player != player_id || tile.room_id != -1)
                     continue;
 
-                int num_tiles = 1; //num tiles per room
+                int num_tiles = 0; //num tiles per room
                 int num_blocks = 1; //num blocks per room
                 int num_internal_tiles = 0; //num tiles surrounded
+                int num_tiles_connected = 0; //num tiles per room
+                int num_internal_tiles_connected = 0; //num tiles surrounded
 
                 pending.Clear();
                 pending.Add(tile);
@@ -345,7 +347,9 @@ public class Board : ScriptableObject
 
                     //sector_size
                     num_tiles++;
-                    if(used_blocks[current.block_id] == 0)
+                    if (current.data.connected)
+                        num_tiles_connected++;
+                    if (used_blocks[current.block_id] == 0)
                     {
                         num_blocks++;
                         used_blocks[current.block_id] = 1; //mark as used
@@ -376,6 +380,8 @@ public class Board : ScriptableObject
 
                     if (valid_neightbours == 4)
                     {
+                        if (current.data.connected)
+                            num_internal_tiles_connected++;
                         num_internal_tiles++;
                         current.data.interior = true;
                     }
@@ -383,7 +389,7 @@ public class Board : ScriptableObject
 
                 //room score found
                 //score += num_tiles * num_blocks;
-                score += num_tiles + num_internal_tiles;
+                score += num_tiles_connected + num_internal_tiles_connected;
                 room_id++;
             }
 
