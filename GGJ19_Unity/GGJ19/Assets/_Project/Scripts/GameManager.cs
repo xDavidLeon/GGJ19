@@ -17,7 +17,8 @@ public class GameManager : Singleton<GameManager>
         INTRO,
         PLAYER_SELECTION,
         GAME,
-        GAME_OVER
+        GAME_OVER,
+        TUTORIAL
     }
 
     [Header("Game Settings")]
@@ -64,9 +65,11 @@ public class GameManager : Singleton<GameManager>
     public CanvasGroup canvasGroupGame;
     public TMPro.TextMeshProUGUI txtPlayerTimerTitle;
     public UnityEngine.UI.Image txtPlayerTimerImage;
+    public UnityEngine.UI.Image imgIntro;
+    public UnityEngine.UI.Image imgTutorial;
 
     [Header("Audio")]
-    public AudioSource audioFall;
+    public AudioClip clipFall;
 
     public PlayerController CurrentPlayer
     {
@@ -133,6 +136,14 @@ public class GameManager : Singleton<GameManager>
         {
             case GAME_STATE.INTRO:
                 introStartTime = Time.time;
+                imgIntro.DOFade(1.0f, 0.0f);
+                imgTutorial.DOFade(0.0f, 0.0f);
+
+                //canvasGroupIntro.DOFade(1.0f, 0.5f);
+                break;
+            case GAME_STATE.TUTORIAL:
+                imgIntro.DOFade(0.0f, 0.5f);
+                imgTutorial.DOFade(1.0f, 0.5f);
                 //canvasGroupIntro.DOFade(1.0f, 0.5f);
                 break;
             case GAME_STATE.PLAYER_SELECTION:
@@ -158,6 +169,9 @@ public class GameManager : Singleton<GameManager>
         switch(gameState)
         {
             case GAME_STATE.INTRO:
+                if(Time.time - introStartTime > introDuration / 2.0f) SetGameState(GAME_STATE.TUTORIAL);
+                break;
+            case GAME_STATE.TUTORIAL:
                 if(Time.time - introStartTime > introDuration) SetGameState(GAME_STATE.PLAYER_SELECTION);
                 break;
             case GAME_STATE.PLAYER_SELECTION:
@@ -357,9 +371,7 @@ public class GameManager : Singleton<GameManager>
                 }
             }
 
-        AudioSource audioData = GetComponent<AudioSource>();
-        if(audioData)
-            audioData.Play(0);
+        GetComponent<AudioSource>().PlayOneShot(clipFall);
 
         return true;
     }
