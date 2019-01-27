@@ -7,6 +7,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6501413673113276706, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_textInfo.textComponent
+      value: 
+      objectReference: {fileID: 2495905615694572836}
+    - target: {fileID: 6501413673113276706, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_firstOverflowCharacterIndex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4313696141795952626, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_textInfo.textComponent
+      value: 
+      objectReference: {fileID: 4848061691366276084}
+    - target: {fileID: 4313696141795952626, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_firstOverflowCharacterIndex
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4725484416716653280, guid: 636774ec43eb70247a10780b64acc370,
         type: 3}
       propertyPath: m_Name
@@ -116,7 +136,7 @@ PrefabInstance:
         type: 3}
       propertyPath: uiCanvasGroup
       value: 
-      objectReference: {fileID: 6841471189874357362}
+      objectReference: {fileID: 3894528912167454510}
     - target: {fileID: 7638726460363653574, guid: 636774ec43eb70247a10780b64acc370,
         type: 3}
       propertyPath: pointer
@@ -127,16 +147,11 @@ PrefabInstance:
       propertyPath: playBlock
       value: 
       objectReference: {fileID: 3250556550354301504}
-    - target: {fileID: 4313696141795952626, guid: 636774ec43eb70247a10780b64acc370,
+    - target: {fileID: 7638726460363653574, guid: 636774ec43eb70247a10780b64acc370,
         type: 3}
-      propertyPath: m_textInfo.textComponent
+      propertyPath: imgPrompt
       value: 
-      objectReference: {fileID: 4848061691366276084}
-    - target: {fileID: 4313696141795952626, guid: 636774ec43eb70247a10780b64acc370,
-        type: 3}
-      propertyPath: m_firstOverflowCharacterIndex
-      value: 0
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8757278334810794127}
     - target: {fileID: 8825032481878868625, guid: 636774ec43eb70247a10780b64acc370,
         type: 3}
       propertyPath: m_Color.r
@@ -171,16 +186,6 @@ PrefabInstance:
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.7509682
-      objectReference: {fileID: 0}
-    - target: {fileID: 6501413673113276706, guid: 636774ec43eb70247a10780b64acc370,
-        type: 3}
-      propertyPath: m_textInfo.textComponent
-      value: 
-      objectReference: {fileID: 2495905615694572836}
-    - target: {fileID: 6501413673113276706, guid: 636774ec43eb70247a10780b64acc370,
-        type: 3}
-      propertyPath: m_firstOverflowCharacterIndex
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7895948856117516726, guid: 636774ec43eb70247a10780b64acc370,
         type: 3}
@@ -222,6 +227,26 @@ PrefabInstance:
       propertyPath: playBlock
       value: 
       objectReference: {fileID: 3250556550354301504}
+    - target: {fileID: 27435871657225660, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 27435871657225660, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 27435871657225660, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 27435871657225660, guid: 636774ec43eb70247a10780b64acc370,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.15
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 636774ec43eb70247a10780b64acc370, type: 3}
 --- !u!114 &3250556550354301504 stripped
@@ -242,9 +267,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8690422967599397894}
   m_PrefabAsset: {fileID: 0}
---- !u!225 &6841471189874357362 stripped
+--- !u!225 &3894528912167454510 stripped
 CanvasGroup:
-  m_CorrespondingSourceObject: {fileID: 2768408004241901684, guid: 636774ec43eb70247a10780b64acc370,
+  m_CorrespondingSourceObject: {fileID: 5662907973607013160, guid: 636774ec43eb70247a10780b64acc370,
     type: 3}
   m_PrefabInstance: {fileID: 8690422967599397894}
   m_PrefabAsset: {fileID: 0}
@@ -270,5 +295,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8757278334810794127 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 77282037122684041, guid: 636774ec43eb70247a10780b64acc370,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690422967599397894}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

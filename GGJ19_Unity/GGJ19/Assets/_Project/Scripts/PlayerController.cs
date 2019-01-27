@@ -1,16 +1,18 @@
 ﻿using Rewired;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
-    public int playerId;
+    public int playerId = -1;
+    public bool initialized = false;
+    public Color playerColor = Color.white;
 
     [Header("UI")]
     public int score = 0;
     public TMPro.TextMeshProUGUI textScore;
     public CanvasGroup uiCanvasGroup;
+    public UnityEngine.UI.Image imgPrompt; 
 
     [Header("Input")]
     public float moveSpeed = 15.0f;
@@ -22,7 +24,7 @@ public class PlayerController : MonoBehaviour
     private float posZ = 0;
     private float placementX = 0;
     private float placementZ = 0;
-    private Rewired.Player playerInput;
+    public Rewired.Player playerInput;
 
     public int startX = -1;
     public int startY = -1;
@@ -45,51 +47,75 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         cam = Camera.main;
-        playerId = GameManager.Instance.players.IndexOf(this);
     }
 
     void Start()
     {
-        playerInput = ReInput.players.GetPlayer(playerId);
-
-        if(GameManager.Instance.numPlayers <= playerId)
-        {
-            GameManager.Instance.players[playerId].uiCanvasGroup.alpha = 0.0f;
-            return;
-        }
-
-        NewBlock();
-
-        /*
-        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.ROOM_TYPE.CORRIDOR, playerId);
-        playBlock.Populate();
-        */
+        imgPrompt.rectTransform.DOScale(2.0f, 0.5f).SetLoops(-1, LoopType.Yoyo);
     }
 
     void Update()
     {
-        if (!cam)
+        if(!cam)
             return;
 
-        if(GameManager.Instance.numPlayers <= playerId) return;
+        if(GameManager.Instance.gameState == GameManager.GAME_STATE.PLAYER_SELECTION && initialized == false)
+        {
+            imgPrompt.gameObject.SetActive(true);
+        }
+        else
+            imgPrompt.gameObject.SetActive(false);
+
+        //if(GameManager.Instance.gamePlayerIdCounter <= playerId) return;
+        if(initialized == false || playerInput == null)
+        {
+            DisablePlayer();
+            return;
+        }
+
+        //if(GameManager.Instance.gameState != GameManager.GAME_STATE.GAME)
+        //{
+        //    playBlock.gameObject.SetActive(false);
+        //}
+        //else
+        //    playBlock.gameObject.SetActive(true);
 
         UpdatePlayerInput();
 
         textScore.text = score.ToString();
         if(MyTurn) uiCanvasGroup.alpha = 1.0f;
         else uiCanvasGroup.alpha = 0.5f;
+    }
 
+    void DisablePlayer()
+    {
+        playerId = -1;
+        uiCanvasGroup.alpha = 0.0f;
+        playBlock.gameObject.SetActive(false);
+    }
+
+    public void Init(int id, Rewired.Player rewiredPlayer)
+    {
+        playerId = id;
+        playerInput = rewiredPlayer;
+        initialized = true;
+        playBlock.gameObject.SetActive(true);
+        posX = 10;
+        posZ = 10;
+
+        NewBlock();
     }
 
     public void UpdatePlayerInput()
     {
+
         placementX = posX;
         placementZ = posZ;
 
         Controller controller = playerInput.controllers.GetLastActiveController();
         if(controller == null)
             return;
-        if (controller.type == ControllerType.Mouse)
+        if(controller.type == ControllerType.Mouse)
         {
             Ray ray = cam.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
             if(Physics.Raycast(ray, out hit, 100, raycastLayer))
@@ -125,12 +151,14 @@ public class PlayerController : MonoBehaviour
         Vector3 placement = new Vector3(placementX, GameManager.Instance.tileDatabase.boardHeight, placementZ);
         Debug.DrawLine(placement, placement + Vector3.up * 10.0f, Color.blue);
 
+        if(GameManager.Instance.gameState != GameManager.GAME_STATE.GAME) return;
+
         // Move the playBlock to the target position
         if(MyTurn)
         {
-            if(playerInput.GetButtonDown("Select") || Input.GetKeyDown(KeyCode.Y) )
+            if(playerInput.GetButtonDown("Select") || Input.GetKeyDown(KeyCode.Y))
             {
-                if(GameManager.Instance.PlacePlayBlock(playBlock, Input.GetKeyDown(KeyCode.Y)) ) 
+                if(GameManager.Instance.PlacePlayBlock(playBlock, Input.GetKeyDown(KeyCode.Y)))
                     GameManager.Instance.NextTurn();
             }
         }
@@ -141,11 +169,12 @@ public class PlayerController : MonoBehaviour
     {
         Board.ROOM_TYPE roomType = Board.GetRandomRoomType();
 
-        if (GameManager.Instance.mode == GameManager.GAME_MODE.CONQUEST)
+        if(GameManager.Instance.mode == GameManager.GAME_MODE.CONQUEST)
             roomType = (Board.ROOM_TYPE)(playerId + (int)Board.ROOM_TYPE.KITCHEN);
-        else if (GameManager.Instance.mode == GameManager.GAME_MODE.HOME && GameManager.Instance.turn == 0)
+        else if(GameManager.Instance.mode == GameManager.GAME_MODE.HOME && GameManager.Instance.turn == 0)
             roomType = Board.ROOM_TYPE.CORRIDOR;
         playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), roomType, GameManager.Instance.currentPlayerId);
         playBlock.Populate();
     }
+
 }

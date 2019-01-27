@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Rewired;
+using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -9,26 +11,52 @@ public class GameManager : Singleton<GameManager>
         HOME = 2
     };
 
+    public enum GAME_STATE
+    {
+        INTRO,
+        PLAYER_SELECTION,
+        GAME,
+        GAME_OVER
+    }
+
+    [Header("Game Settings")]
     public GAME_MODE mode = GAME_MODE.CONQUEST;
+    public GAME_STATE gameState = GAME_STATE.PLAYER_SELECTION;
     public Board board;
     public TileDatabase tileDatabase;
     public BlockDatabase blockDatabase;
-
     public int boardWidth = 20;
     public int boardHeight = 20;
     public Transform boardContainer;
+    public float selectionCountdownTime = 5.0f;
+    public float turnMaxTime = 10.0f;
+    public float introDuration = 5.0f;
+    private float lastTimePlayerAdded = 0.0f;
+    private float lastTimeTurnStarted = 0.0f;
+    private float introStartTime = 0.0f;
 
-    public List<PlayerController> players;
-
-    public int numPlayers = 2;
-    public int currentPlayerId = 0;
-    Vector2[] offsets;
-
-    public int turn = 0;
-    public int last_block_id = 0;
+    [Header("Special Settings")]
     public bool force_corridors = true;
     public bool force_connection = true;
     public bool placeBotWalls = false;
+    public Transform boardGuide;
+    public int turn = 0;
+    public int last_block_id = 0;
+    private Vector2[] offsets;
+
+    [Header("Player Management")]
+    public List<PlayerController> players;
+    public int maxPlayers = 4;
+    public int activePlayers = 0;
+    public int currentPlayerId = 0;
+
+    [Header("UI")]
+    public CanvasGroup canvasGroupIntro;
+    public CanvasGroup canvasGroupPlayerSelection;
+    public TMPro.TextMeshProUGUI txtPlayerSelectionCooldown;
+    public CanvasGroup canvasGroupGame;
+    public TMPro.TextMeshProUGUI txtPlayerTimerTitle;
+    public UnityEngine.UI.Image txtPlayerTimerImage;
 
     public PlayerController CurrentPlayer
     {
@@ -38,18 +66,38 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    void Start()
+    private void Awake()
     {
         offsets = new Vector2[4];
         offsets[0].Set(-1, 0);
         offsets[1].Set(+1, 0);
         offsets[2].Set(0, -1);
         offsets[3].Set(0, +1);
+        activePlayers = 0;
+
+        canvasGroupPlayerSelection.alpha = 0.0f;
+        canvasGroupGame.alpha = 0.0f;
+        canvasGroupIntro.alpha = 0.0f;
+    }
+
+    void Start()
+    {
+        SetGameState(GAME_STATE.INTRO);
+    }
+
+    public void InitGame()
+    {
+        canvasGroupPlayerSelection.DOFade(0.0f, 1.0f);
+        canvasGroupGame.DOFade(1.0f, 1.0f);
 
         last_block_id = 0;
+        currentPlayerId = 0;
+        lastTimeTurnStarted = Time.time;
 
         board.InitBoard(boardWidth, boardHeight);
-        for(int i = 0; i < numPlayers; ++i)
+        boardGuide.transform.localScale = new Vector3(boardWidth, 1.0f, boardHeight);
+        boardGuide.transform.localPosition = new Vector3(boardWidth / 2.0f, -0.475f, boardHeight / 2.0f);
+        for(int i = 0; i < activePlayers; ++i)
             SetPlayerStartTiles(i);
 
         //obstacles
@@ -58,9 +106,89 @@ public class GameManager : Singleton<GameManager>
         UpdateBoardTileAssets();
     }
 
+    public void SetGameState(GAME_STATE state)
+    {
+        gameState = state;
+        switch (state)
+        {
+            case GAME_STATE.INTRO:
+                introStartTime = Time.time;
+                canvasGroupIntro.DOFade(1.0f, 0.5f);
+                break;
+            case GAME_STATE.PLAYER_SELECTION:
+                canvasGroupIntro.DOFade(0.0f, 0.5f);
+                canvasGroupPlayerSelection.DOFade(1.0f, 0.5f);
+                lastTimePlayerAdded = Time.time;
+                break;
+            case GAME_STATE.GAME:
+                InitGame();
+                break;
+            case GAME_STATE.GAME_OVER:
+                break;
+        }
+    }
+
     void Update()
     {
+        switch(gameState)
+        {
+            case GAME_STATE.INTRO:
+                if(Time.time - introStartTime > introDuration) SetGameState(GAME_STATE.PLAYER_SELECTION);
+                break;
+            case GAME_STATE.PLAYER_SELECTION:
+                // Watch for JoinGame action in each Player
+                for(int i = 0; i < ReInput.players.playerCount; i++)
+                {
+                    if(ReInput.players.GetPlayer(i).GetButtonDown("Select"))
+                    {
+                        AssignNextPlayer(i);
+                    }
+                }
+                int timeSelection = (int)(selectionCountdownTime - (Time.time - lastTimePlayerAdded));
+                timeSelection = Mathf.Clamp(timeSelection, 0, (int) selectionCountdownTime);
+                if(activePlayers >= 1)
+                    txtPlayerSelectionCooldown.text = timeSelection.ToString();
+                else
+                    txtPlayerSelectionCooldown.text = "";
+                if(activePlayers >= maxPlayers || (Time.time - lastTimePlayerAdded > selectionCountdownTime && activePlayers >= 1)) SetGameState(GAME_STATE.GAME);
 
+                break;
+            case GAME_STATE.GAME:
+                txtPlayerTimerTitle.text = "Player " + (currentPlayerId  + 1 ) + " Turn";
+                txtPlayerTimerTitle.color = CurrentPlayer.playerColor;
+                txtPlayerTimerImage.color = CurrentPlayer.playerColor;
+                float timeTurn = (int)(turnMaxTime - (Time.time - lastTimeTurnStarted));
+                timeTurn = Mathf.Clamp(timeTurn, 0.0f, turnMaxTime);
+                txtPlayerTimerImage.fillAmount = timeTurn / turnMaxTime;
+
+                if(Time.time - lastTimeTurnStarted > turnMaxTime) NextTurn();
+
+                break;
+            case GAME_STATE.GAME_OVER:
+                break;
+        }
+    }
+
+    void AssignNextPlayer(int rewiredPlayerId)
+    {
+        if(activePlayers >= maxPlayers)
+        {
+            Debug.LogError("Max player limit already reached!");
+            return;
+        }
+
+        Player rewiredPlayer = ReInput.players.GetPlayer(rewiredPlayerId);
+        players[activePlayers].Init(rewiredPlayerId, rewiredPlayer);
+
+        // Disable the Assignment map category in Player so no more JoinGame Actions return
+        //rewiredPlayer.controllers.maps.SetMapsEnabled(false, "Assignment");
+
+        // Enable UI control for this Player now that he has joined
+        //rewiredPlayer.controllers.maps.SetMapsEnabled(true, "UI");
+        Debug.Log("Added Rewired Player id " + rewiredPlayerId + " to game player " + activePlayers);
+        activePlayers++;
+
+        lastTimePlayerAdded = Time.time;
     }
 
     void SetPlayerStartTiles(int player_id)
@@ -171,7 +299,7 @@ public class GameManager : Singleton<GameManager>
                     continue;
 
                 Board.ROOM_TYPE type = playBlock.roomType;
-                if (erase)
+                if(erase)
                     type = Board.ROOM_TYPE.EMPTY;
 
                 PlaceTile(startX + i, startY + j, type, currentPlayerId, block_id);
@@ -216,10 +344,10 @@ public class GameManager : Singleton<GameManager>
     public void NextTurn()
     {
         //mark tiles not connected
-        for(int i = 0; i < numPlayers; ++i)
+        for(int i = 0; i < activePlayers; ++i)
         {
             PlayerController player = players[i];
-            if (mode == GAME_MODE.CONQUEST)
+            if(mode == GAME_MODE.CONQUEST)
                 board.ComputeConnectivity(player.playerId);
             player.score = board.ComputePlayerScore(player.playerId);
         }
@@ -229,8 +357,9 @@ public class GameManager : Singleton<GameManager>
 
         UpdateBoardTileAssets();
 
-        currentPlayerId = (currentPlayerId + 1) % numPlayers;
+        currentPlayerId = (currentPlayerId + 1) % activePlayers;
         if(currentPlayerId == 0) turn++;
+        lastTimeTurnStarted = Time.time;
     }
 
     #region VISUALS
@@ -271,12 +400,12 @@ public class GameManager : Singleton<GameManager>
         int x = tile.pos_x;
         int y = tile.pos_y;
 
-        if (tile.gFloor != null)
+        if(tile.gFloor != null)
             GameObject.Destroy(tile.gFloor);
 
-        GameObject g = CreateTileGameObject( tile.data.roomType, tile.data.connected );
+        GameObject g = CreateTileGameObject(tile.data.roomType, tile.data.connected);
         g.name = "Tile_X" + x + "Y" + y;
-        g.SetActive( tile.data.roomType != Board.ROOM_TYPE.EMPTY);
+        g.SetActive(tile.data.roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
         g.transform.localPosition = new Vector3(x + 0.5f, tileDatabase.boardHeight, y + 0.5f);
 
@@ -361,7 +490,7 @@ public class GameManager : Singleton<GameManager>
             tile.gProp = g;
         }
 
-        if (isProp && !tile.data.connected)
+        if(isProp && !tile.data.connected)
             return null;
 
         int x = tile.pos_x;
