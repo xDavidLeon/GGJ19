@@ -36,8 +36,9 @@ public class GameManager : Singleton<GameManager>
     private float introStartTime = 0.0f;
 
     [Header("Special Settings")]
+    public int level = 3;
     public bool force_corridors = true;
-    public bool force_connection = true;
+    public bool force_connectivity = true;
     public bool placeBotWalls = false;
     public Transform boardGuide;
     public int turn = 0;
@@ -100,9 +101,9 @@ public class GameManager : Singleton<GameManager>
         for(int i = 0; i < activePlayers; ++i)
             SetPlayerStartTiles(i);
 
-        //obstacles
-        board.SetLevel(2);
+        board.SetLevel(level);
 
+        //obstacles
         UpdateBoardTileAssets();
     }
 
@@ -263,6 +264,13 @@ public class GameManager : Singleton<GameManager>
                                 Debug.Log("wrong corridor connection");
                                 continue;
                             }
+
+                            if ( force_connectivity && !tile.data.connected && tile.data.roomType != Board.ROOM_TYPE.START )
+                            {
+                                Debug.Log("not connected");
+                                continue;
+                            }
+
                             touching_player = true;
                             break;
                         }
