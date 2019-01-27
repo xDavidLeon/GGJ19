@@ -320,7 +320,7 @@ public class Board : ScriptableObject
                 if (tile.data.player != player_id || tile.room_id != -1)
                     continue;
 
-                int num_tiles = 1; //num tiles per room
+                int num_tiles = 0; //num tiles per room
                 int num_blocks = 1; //num blocks per room
                 int num_internal_tiles = 0; //num tiles surrounded
 
