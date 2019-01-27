@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2323287787600152051
+--- !u!1 &279484744116890255
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7641602794657421462}
-  - component: {fileID: 8470537214650560872}
-  - component: {fileID: 5662760531712831327}
+  - component: {fileID: 5942235137734823875}
+  - component: {fileID: 1944362208824083198}
+  - component: {fileID: 4303048126015748230}
   m_Layer: 0
   m_Name: Art
   m_TagString: Untagged
@@ -18,35 +18,35 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7641602794657421462
+--- !u!4 &5942235137734823875
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2323287787600152051}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0.05, z: -0.5}
+  m_GameObject: {fileID: 279484744116890255}
+  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0.0000029504295}
+  m_LocalPosition: {x: 0.665, y: 0.677, z: 0.093}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 7369022357750298609}
+  m_Father: {fileID: 7910111754996968046}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8470537214650560872
+  m_LocalEulerAnglesHint: {x: 0, y: -180.00002, z: 0}
+--- !u!33 &1944362208824083198
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2323287787600152051}
-  m_Mesh: {fileID: 4300000, guid: c1d95f22a55e38e4291812f991c2d299, type: 3}
---- !u!23 &5662760531712831327
+  m_GameObject: {fileID: 279484744116890255}
+  m_Mesh: {fileID: 4300000, guid: ecc78b8ff4e97c44d92a1961680e7d29, type: 3}
+--- !u!23 &4303048126015748230
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2323287787600152051}
+  m_GameObject: {fileID: 279484744116890255}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -57,9 +57,9 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c1d95f22a55e38e4291812f991c2d299, type: 3}
-  - {fileID: 2100002, guid: c1d95f22a55e38e4291812f991c2d299, type: 3}
-  - {fileID: 2100004, guid: c1d95f22a55e38e4291812f991c2d299, type: 3}
+  - {fileID: 2100000, guid: ecc78b8ff4e97c44d92a1961680e7d29, type: 3}
+  - {fileID: 2100002, guid: ecc78b8ff4e97c44d92a1961680e7d29, type: 3}
+  - {fileID: 2100004, guid: ecc78b8ff4e97c44d92a1961680e7d29, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -79,7 +79,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!1 &9021573114647157446
+--- !u!1 &6389801570157655674
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,26 +87,26 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7369022357750298609}
+  - component: {fileID: 7910111754996968046}
   m_Layer: 0
-  m_Name: WallDoorway
+  m_Name: BathroomMirror
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7369022357750298609
+--- !u!4 &7910111754996968046
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9021573114647157446}
+  m_GameObject: {fileID: 6389801570157655674}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0.5}
+  m_LocalPosition: {x: -0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 7641602794657421462}
+  - {fileID: 5942235137734823875}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

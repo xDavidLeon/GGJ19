@@ -103,15 +103,15 @@ public class PlayerController : MonoBehaviour
         if(playerInput.GetButtonDown("Rotate"))
             playBlock.Rotate(1);
 
-        pointer.position = Vector3.Lerp(pointer.position, new Vector3(placementX + 2, Constants.boardPlayblockHeight + 0.5f, placementZ + 2), Time.deltaTime * 4);
-        playBlock.transform.position = new Vector3(placementX, Constants.boardPlayblockHeight, placementZ);
+        pointer.position = Vector3.Lerp(pointer.position, new Vector3(placementX + 2, GameManager.Instance.tileDatabase.boardPlayblockHeight + 0.5f, placementZ + 2), Time.deltaTime * 4);
+        playBlock.transform.position = new Vector3(placementX, GameManager.Instance.tileDatabase.boardPlayblockHeight, placementZ);
 
         // Move the playBlock to the target position
         if(MyTurn)
         {
             if(playerInput.GetButtonDown("Select"))
             {
-                Vector3 placementPosition = new Vector3(placementX, Constants.boardPlayblockHeight, placementZ);
+                Vector3 placementPosition = new Vector3(placementX, GameManager.Instance.tileDatabase.boardPlayblockHeight, placementZ);
                 playBlock.transform.position = placementPosition;
 
                 Debug.DrawLine(placementPosition, placementPosition + Vector3.up, Color.blue);

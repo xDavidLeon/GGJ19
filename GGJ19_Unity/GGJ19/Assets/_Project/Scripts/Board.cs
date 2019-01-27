@@ -45,7 +45,8 @@ public class Board : ScriptableObject
         public GameObject gWallLeft = null; 
         public GameObject gWallRight = null;
         public GameObject gWallTop = null; 
-        public GameObject gWallBot = null; 
+        public GameObject gWallBot = null;
+        public GameObject gProp = null;
 
         public void Clear()
         {
@@ -67,6 +68,7 @@ public class Board : ScriptableObject
             GameObject.Destroy(gWallRight);
             GameObject.Destroy(gWallTop);
             GameObject.Destroy(gWallBot);
+            GameObject.Destroy(gProp);
         }
     }
 
