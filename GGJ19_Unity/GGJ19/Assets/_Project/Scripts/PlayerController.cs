@@ -1,6 +1,6 @@
-﻿using Rewired;
+﻿using DG.Tweening;
+using Rewired;
 using UnityEngine;
-using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     public int score = 0;
     public TMPro.TextMeshProUGUI textScore;
     public CanvasGroup uiCanvasGroup;
-    public UnityEngine.UI.Image imgPrompt; 
+    public UnityEngine.UI.Image imgPrompt;
 
     [Header("Input")]
     public float moveSpeed = 15.0f;
@@ -160,6 +160,10 @@ public class PlayerController : MonoBehaviour
             {
                 if(GameManager.Instance.PlacePlayBlock(playBlock, Input.GetKeyDown(KeyCode.Y)))
                     GameManager.Instance.NextTurn();
+            }
+            else if(playerInput.GetButtonDown("Skip"))
+            {
+                GameManager.Instance.NextTurn(true);
             }
         }
 

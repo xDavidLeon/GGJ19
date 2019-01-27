@@ -31,9 +31,12 @@ public class GameManager : Singleton<GameManager>
     public float selectionCountdownTime = 5.0f;
     public float turnMaxTime = 10.0f;
     public float introDuration = 5.0f;
+    public float gameOverDuration = 5.0f;
     private float lastTimePlayerAdded = 0.0f;
     private float lastTimeTurnStarted = 0.0f;
+    private float gameOverStartTime = 0.0f;
     private float introStartTime = 0.0f;
+    private int skippedTurns = 0;
 
     [Header("Special Settings")]
     public int level = 3;
@@ -54,6 +57,7 @@ public class GameManager : Singleton<GameManager>
     [Header("UI")]
     public CanvasGroup canvasGroupIntro;
     public CanvasGroup canvasGroupPlayerSelection;
+    public CanvasGroup canvasGroupGameOver;
     public TMPro.TextMeshProUGUI txtPlayerSelectionCooldown;
     public CanvasGroup canvasGroupGame;
     public TMPro.TextMeshProUGUI txtPlayerTimerTitle;
@@ -79,6 +83,7 @@ public class GameManager : Singleton<GameManager>
         canvasGroupPlayerSelection.alpha = 0.0f;
         canvasGroupGame.alpha = 0.0f;
         canvasGroupIntro.alpha = 0.0f;
+        if (canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
     }
 
     void Start()
@@ -94,6 +99,7 @@ public class GameManager : Singleton<GameManager>
         last_block_id = 0;
         currentPlayerId = 0;
         lastTimeTurnStarted = Time.time;
+        skippedTurns = 0;
 
         board.InitBoard(boardWidth, boardHeight);
         boardGuide.transform.localScale = new Vector3(boardWidth, 1.0f, boardHeight);
@@ -109,8 +115,9 @@ public class GameManager : Singleton<GameManager>
 
     public void SetGameState(GAME_STATE state)
     {
+        GAME_STATE prevState = state;
         gameState = state;
-        switch (state)
+        switch(state)
         {
             case GAME_STATE.INTRO:
                 introStartTime = Time.time;
@@ -122,9 +129,14 @@ public class GameManager : Singleton<GameManager>
                 lastTimePlayerAdded = Time.time;
                 break;
             case GAME_STATE.GAME:
+                if(canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
+                if (prevState == GAME_STATE.GAME_OVER)
+                    if(canvasGroupGameOver != null) canvasGroupGameOver.DOFade(0.0f, 0.5f);
                 InitGame();
                 break;
             case GAME_STATE.GAME_OVER:
+                if(canvasGroupGameOver != null) canvasGroupGameOver.DOFade(1.0f, 0.5f);
+                gameOverStartTime = Time.time;
                 break;
         }
     }
@@ -146,7 +158,7 @@ public class GameManager : Singleton<GameManager>
                     }
                 }
                 int timeSelection = (int)(selectionCountdownTime - (Time.time - lastTimePlayerAdded));
-                timeSelection = Mathf.Clamp(timeSelection, 0, (int) selectionCountdownTime);
+                timeSelection = Mathf.Clamp(timeSelection, 0, (int)selectionCountdownTime);
                 if(activePlayers >= 1)
                     txtPlayerSelectionCooldown.text = timeSelection.ToString();
                 else
@@ -155,7 +167,7 @@ public class GameManager : Singleton<GameManager>
 
                 break;
             case GAME_STATE.GAME:
-                txtPlayerTimerTitle.text = "Player " + (currentPlayerId  + 1 ) + " Turn";
+                txtPlayerTimerTitle.text = "Player " + (currentPlayerId + 1) + " Turn";
                 txtPlayerTimerTitle.color = CurrentPlayer.playerColor;
                 txtPlayerTimerImage.color = CurrentPlayer.playerColor;
                 float timeTurn = (int)(turnMaxTime - (Time.time - lastTimeTurnStarted));
@@ -166,6 +178,7 @@ public class GameManager : Singleton<GameManager>
 
                 break;
             case GAME_STATE.GAME_OVER:
+                if(Time.time - gameOverStartTime > gameOverDuration) SetGameState(GAME_STATE.GAME);
                 break;
         }
     }
@@ -265,7 +278,7 @@ public class GameManager : Singleton<GameManager>
                                 continue;
                             }
 
-                            if ( force_connectivity && !tile.data.connected && tile.data.roomType != Board.ROOM_TYPE.START )
+                            if(force_connectivity && !tile.data.connected && tile.data.roomType != Board.ROOM_TYPE.START)
                             {
                                 Debug.Log("not connected");
                                 continue;
@@ -349,7 +362,7 @@ public class GameManager : Singleton<GameManager>
         PlaceTileGameObject(tile);
     }
 
-    public void NextTurn()
+    public void NextTurn(bool skip = false)
     {
         //mark tiles not connected
         for(int i = 0; i < activePlayers; ++i)
@@ -358,6 +371,15 @@ public class GameManager : Singleton<GameManager>
             if(mode == GAME_MODE.CONQUEST)
                 board.ComputeConnectivity(player.playerId);
             player.score = board.ComputePlayerScore(player.playerId);
+        }
+
+        if(skip) skippedTurns++;
+        else skippedTurns = 0;
+
+        if (skippedTurns >= activePlayers)
+        {
+            SetGameState(GAME_STATE.GAME_OVER);
+            return;
         }
 
         // Get new block
