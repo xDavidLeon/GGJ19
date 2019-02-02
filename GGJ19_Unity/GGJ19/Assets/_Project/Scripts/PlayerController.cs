@@ -192,12 +192,12 @@ public class PlayerController : MonoBehaviour
     {
         Board.ROOM_TYPE roomType = Board.GetRandomRoomType();
 
-        if(GameManager.Instance.mode == GameManager.GAME_MODE.CONQUEST)
-            roomType = (Board.ROOM_TYPE)(playerId + (int)Board.ROOM_TYPE.KITCHEN);
-        else if(GameManager.Instance.mode == GameManager.GAME_MODE.HOME && GameManager.Instance.turn == 0)
-            roomType = Board.ROOM_TYPE.CORRIDOR;
-        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), roomType, GameManager.Instance.currentPlayerId);
-        playBlock.Populate();
+        //if(GameManager.Instance.mode == GameManager.GAME_MODE.CONQUEST)
+        //    roomType = (Board.ROOM_TYPE)(playerId + (int)Board.ROOM_TYPE.KITCHEN);
+        //else if(GameManager.Instance.mode == GameManager.GAME_MODE.HOME && GameManager.Instance.turn == 0)
+        //    roomType = Board.ROOM_TYPE.CORRIDOR;
+        playBlock.SetData(GameManager.Instance.blockDatabase.GetRandomBlock(), Board.GetRandomRoomType(), GameManager.Instance.currentPlayerId);
+        playBlock.Populate(playerId);
     }
 
 }

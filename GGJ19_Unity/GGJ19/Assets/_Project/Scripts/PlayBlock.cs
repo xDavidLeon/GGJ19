@@ -25,7 +25,7 @@ public class PlayBlock : MonoBehaviour
     }
 
     [ContextMenu("Populate")]
-    public void Populate()
+    public void Populate(int playerId)
     {
         Clear();
         for(int i = 0; i < 4; i++)
@@ -33,7 +33,7 @@ public class PlayBlock : MonoBehaviour
             {
                 if (block.GetValue(i,j) == 0)
                     continue;
-                GameObject g = GameManager.Instance.CreateTileGameObject( roomType, true );
+                GameObject g = GameManager.Instance.CreateTileGameObject( roomType, true, playerId );
                 g.transform.SetParent(this.transform);
                 g.transform.localPosition = new Vector3(i, 0.0f, j);
             }
@@ -50,6 +50,6 @@ public class PlayBlock : MonoBehaviour
     {
         block.Rotate( dir ); //rotate internal block
         //repopulate
-        Populate();
+        Populate(player);
     }
 }

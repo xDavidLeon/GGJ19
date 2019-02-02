@@ -150,8 +150,16 @@ public class GameManager : Singleton<GameManager>
                 canvasGroupIntro.DOFade(0.0f, 0.5f);
                 canvasGroupPlayerSelection.DOFade(1.0f, 0.5f);
                 lastTimePlayerAdded = Time.time;
+                //activePlayers = 0;
+                //for(int i = 0; i < activePlayers; ++i)
+                //{
+                //    PlayerController player = players[i];
+                //    player.Reset();
+                //    player.initialized = false;
+                //}
                 break;
             case GAME_STATE.GAME:
+                canvasGroupIntro.alpha = 0.0f;
                 if(canvasGroupGameOver != null) canvasGroupGameOver.alpha = 0.0f;
                 if(prevState == GAME_STATE.GAME_OVER)
                     if(canvasGroupGameOver != null) canvasGroupGameOver.DOFade(0.0f, 0.5f);
@@ -166,13 +174,15 @@ public class GameManager : Singleton<GameManager>
 
     void Update()
     {
+
+
         switch(gameState)
         {
             case GAME_STATE.INTRO:
-                if(Time.time - introStartTime > introDuration / 3.0f) SetGameState(GAME_STATE.TUTORIAL);
+                if(Time.time - introStartTime > introDuration / 3.0f || Input.GetKeyDown(KeyCode.Escape)) SetGameState(GAME_STATE.TUTORIAL);
                 break;
             case GAME_STATE.TUTORIAL:
-                if(Time.time - introStartTime > introDuration) SetGameState(GAME_STATE.PLAYER_SELECTION);
+                if(Time.time - introStartTime > introDuration || Input.GetKeyDown(KeyCode.Escape)) SetGameState(GAME_STATE.PLAYER_SELECTION);
                 break;
             case GAME_STATE.PLAYER_SELECTION:
                 // Watch for JoinGame action in each Player
@@ -193,6 +203,11 @@ public class GameManager : Singleton<GameManager>
 
                 break;
             case GAME_STATE.GAME:
+                if(Input.GetKeyDown(KeyCode.Escape))
+                {
+                    SetGameState(GAME_STATE.PLAYER_SELECTION);
+                    return;
+                }
                 txtPlayerTimerTitle.text = "Player " + (currentPlayerId + 1) + " Turn";
                 txtPlayerTimerTitle.color = CurrentPlayer.playerColor;
                 txtPlayerTimerImage.color = CurrentPlayer.playerColor;
@@ -204,7 +219,7 @@ public class GameManager : Singleton<GameManager>
 
                 break;
             case GAME_STATE.GAME_OVER:
-                if(Time.time - gameOverStartTime > gameOverDuration) SetGameState(GAME_STATE.GAME);
+                if(Time.time - gameOverStartTime > gameOverDuration || Input.GetKeyDown(KeyCode.Escape)) SetGameState(GAME_STATE.GAME);
                 break;
         }
     }
@@ -495,7 +510,7 @@ public class GameManager : Singleton<GameManager>
         if(tile.gFloor != null)
             GameObject.Destroy(tile.gFloor);
 
-        GameObject g = CreateTileGameObject(tile.data.roomType, tile.data.connected);
+        GameObject g = CreateTileGameObject(tile.data.roomType, tile.data.connected, tile.data.player);
         g.name = "Tile_X" + x + "Y" + y;
         g.SetActive(tile.data.roomType != Board.ROOM_TYPE.EMPTY);
         g.transform.parent = boardContainer;
@@ -636,15 +651,25 @@ public class GameManager : Singleton<GameManager>
     /// </summary>
     /// <param name="roomType"></param>
     /// <returns></returns>
-    public GameObject CreateTileGameObject(Board.ROOM_TYPE room_type, bool connected = true)
+    public GameObject CreateTileGameObject(Board.ROOM_TYPE room_type, bool connected, int playerId)
     {
         GameObject g = GameObject.Instantiate(tileDatabase.prefabTileFloor, new Vector3(0, tileDatabase.boardHeight, 0), Quaternion.identity);
         g.transform.localScale = tileDatabase.tileScale;
         Material mat;
         if(connected)
-            mat = tileDatabase.tileMaterials[room_type];
+        {
+            if(room_type == Board.ROOM_TYPE.EMPTY || room_type == Board.ROOM_TYPE.WALL)
+                mat = tileDatabase.tileMaterials[room_type];
+            else
+                mat = tileDatabase.tileMaterialsPlayers[playerId];
+        }
         else
-            mat = tileDatabase.tileMaterialsDisconnected[room_type];
+        {
+            if(room_type == Board.ROOM_TYPE.EMPTY || room_type == Board.ROOM_TYPE.WALL)
+                mat = tileDatabase.tileMaterialsDisconnected[room_type];
+            else
+                mat = tileDatabase.tileMaterialsPlayersDc[playerId];
+        }
         g.GetComponent<MeshRenderer>().material = mat;
         return g;
     }
